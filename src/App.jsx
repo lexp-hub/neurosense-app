@@ -5,6 +5,8 @@ import { SYSTEM_PROMPT } from './constants/prompts';
 const TechnoSphere = lazy(() => import('./components/TechnoSphere'));
 const Header = lazy(() => import('./components/Header'));
 
+//questa parte riguarda solo la parte del 
+//player YouTube
 const App = () => {
   const [view, setView] = useState('menu'); 
   const [history, setHistory] = useState([]);
