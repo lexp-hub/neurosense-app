@@ -28,12 +28,17 @@ const App = () => {
     const newHistory = [...history, { role: "user", content: userResponse }];
     
     try {
+      // Verifica che Puter.js sia caricato
+      if (!window.puter || !window.puter.ai) {
+        throw new Error("Puter.js non è caricato. Controlla la connessione o autorizza il dominio.");
+      }
+
       // Usiamo Puter.js per gestire la chat AI gratuitamente e senza API Key
       const response = await window.puter.ai.chat([
         { role: "system", content: SYSTEM_PROMPT },
         ...newHistory
       ], {
-        model: 'gemini-1.5-flash', 
+        model: 'gemini-2.0-flash-exp', 
       });
 
       let textResponse = response.message.content;
@@ -46,7 +51,7 @@ const App = () => {
       if (!result.isGuess) setQuestionCount(prev => prev + 1);
     } catch (error) {
       console.error("Errore Puter:", error);
-      setCurrentQuestion({ question: "Interferenza rilevata. Ripeti?", isGuess: false, guess: "" });
+      setCurrentQuestion({ question: `Interferenza: ${error.message}. Verifica dominio su puter.com`, isGuess: false, guess: "" });
     } finally {
       setLoading(false);
     }
