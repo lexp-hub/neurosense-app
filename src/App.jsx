@@ -33,7 +33,7 @@ const App = () => {
         { role: "system", content: SYSTEM_PROMPT },
         ...newHistory
       ], {
-        model: 'claude-3-5-sonnet', // Puoi usare anche 'gpt-4o' o 'gemini-1.5-flash'
+        model: 'gpt-4o-mini', 
       });
 
       let textResponse = response.message.content;
