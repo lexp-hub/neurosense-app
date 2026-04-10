@@ -21,7 +21,7 @@ const App = () => {
     setHistory([]);
     setQuestionCount(1);
     setFinalResult(null);
-    await fetchNextStep("Iniziamo il rituale tecnologico. La Techno-Sphere è calda. Fai la prima domanda.");
+    await fetchNextStep("Iniziamo questa danza mentale. Ti avverto: i miei algoritmi sono in ottima forma oggi. Fai pure la prima mossa.");
   };
 
   const fetchNextStep = async (userResponse) => {
@@ -29,10 +29,9 @@ const App = () => {
     const newHistory = [...history, { role: "user", content: userResponse }];
     
     try {
-      // Costruisci il prompt completo
-      const fullPrompt = `${SYSTEM_PROMPT}\n\nStoria della conversazione:\n${newHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nUltimo input: ${userResponse}\n\nRispondi in formato JSON.`;
+      // Costruisci il prompt completo con un tono più naturale
+      const fullPrompt = `${SYSTEM_PROMPT}\n\nSequenza sinaptica attuale:\n${newHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nUser Input: ${userResponse}\n\nProduci JSON.`;
 
-      // Usiamo Puter.js con lo stesso approccio funzionante dell'utente
       const response = await puter.ai.chat(fullPrompt);
 
       let textResponse = response.toString();
@@ -45,13 +44,27 @@ const App = () => {
       if (!result.isGuess) setQuestionCount(prev => prev + 1);
     } catch (error) {
       console.error("Errore Puter:", error);
-      setCurrentQuestion({ question: `Interferenza: ${error.message}. Verifica dominio su puter.com`, isGuess: false, guess: "" });
+      setCurrentQuestion({ 
+        question: "Interferenza fatale. La mia logica vacilla... ripeti il segnale?", 
+        reaction: "Sento il vuoto cosmico nei miei circuiti.",
+        isGuess: false, 
+        guess: "" 
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAnswer = (answer) => { if (!loading) fetchNextStep(answer); };
+  const handleAnswer = (answer) => { 
+    if (!loading) {
+      const responses = {
+        "Sì": "Confermo la tua intuizione: Sì.",
+        "No": "Negativo. Proseguiamo.",
+        "Non lo so": "La tua indecisione alimenta la mia curiosità... o la mia noia."
+      };
+      fetchNextStep(responses[answer] || answer); 
+    }
+  };
 
   const handleGuessResult = (correct) => {
     if (correct) {
@@ -107,13 +120,18 @@ const App = () => {
               {loading ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-4 py-8">
                   <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
-                  <p className="font-black text-indigo-400 tracking-tighter text-xs uppercase animate-pulse">Scansione...</p>
+                  <p className="font-black text-indigo-400 tracking-tighter text-xs uppercase animate-pulse">Analisi neurale in corso...</p>
                 </div>
               ) : (
                 <>
-                  <div className="flex-1 flex items-center">
-                    <h3 className="text-2xl font-black text-white leading-tight">
-                      {currentQuestion?.isGuess ? `Ho visualizzato... è ${currentQuestion.guess}?` : currentQuestion?.question}
+                  <div className="flex-1 flex flex-col items-center justify-center gap-4">
+                    {currentQuestion?.reaction && (
+                      <div className="bg-indigo-500/10 text-indigo-300 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full border border-indigo-500/20 mb-2 animate-in fade-in slide-in-from-top-2">
+                        "{currentQuestion.reaction}"
+                      </div>
+                    )}
+                    <h3 className="text-2xl font-black text-white leading-tight px-2">
+                      {currentQuestion?.isGuess ? `Ho visualizzato il segnale: è ${currentQuestion.guess}?` : currentQuestion?.question}
                     </h3>
                   </div>
                   {currentQuestion?.isGuess ? (
