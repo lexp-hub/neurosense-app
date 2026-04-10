@@ -33,7 +33,7 @@ const App = () => {
         { role: "system", content: SYSTEM_PROMPT },
         ...newHistory
       ], {
-        model: 'gpt-4o-mini', 
+        model: 'gemini-1.5-flash', 
       });
 
       let textResponse = response.message.content;
