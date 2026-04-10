@@ -131,7 +131,7 @@ const App = () => {
                 </>
               )}
             </div>
-            <button onClick={() => setView('menu')} className="text-slate-600 font-bold text-[10px] uppercase tracking-widest text-center hover:text-indigo-400">Termina Scansione</button>
+            <button onClick={() => setView('menu')} className="w-full bg-red-600/20 text-red-400 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600/30 transition-all">ANNULLA PARTITA</button>
           </div>
         )}
 
