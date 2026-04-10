@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { RotateCcw, X, Loader2 } from 'lucide-react';
-import TechnoSphere from './components/TechnoSphere';
-import Header from './components/Header';
 import { SYSTEM_PROMPT } from './constants/prompts';
+
+const TechnoSphere = lazy(() => import('./components/TechnoSphere'));
+const Header = lazy(() => import('./components/Header'));
 
 const App = () => {
   const [view, setView] = useState('menu'); 
@@ -74,14 +75,18 @@ const App = () => {
         <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
       </div>
 
-      <Header radioOn={radioOn} setRadioOn={setRadioOn} setShowSettings={setShowSettings} />
+      <Suspense fallback={<div className="h-16" />}>
+        <Header radioOn={radioOn} setRadioOn={setRadioOn} setShowSettings={setShowSettings} />
+      </Suspense>
 
       <main className="w-full max-w-md relative z-10 flex-1 flex flex-col justify-center">
         {view === 'menu' && (
           <div className="flex flex-col items-center gap-8 py-4 animate-in fade-in zoom-in duration-700">
             <div className="relative">
                 <div className="absolute inset-0 bg-indigo-500/20 blur-[50px] rounded-full"></div>
-                <TechnoSphere className="w-56 h-56 relative z-10" animating={true} />
+                <Suspense fallback={<div className="w-56 h-56" />}>
+                  <TechnoSphere className="w-56 h-56 relative z-10" animating={true} />
+                </Suspense>
             </div>
             <div className="text-center space-y-3">
               <h2 className="text-4xl font-black text-white leading-none tracking-tighter uppercase">Techno-Sphere</h2>
@@ -94,7 +99,11 @@ const App = () => {
         {view === 'game' && (
           <div className="flex flex-col gap-5 animate-in slide-in-from-bottom-8 duration-500">
             <div className="bg-[#1e293b]/90 backdrop-blur-lg rounded-[32px] p-8 shadow-2xl border border-slate-700 flex flex-col items-center text-center gap-6 relative min-h-[460px]">
-              <div className="w-24 h-24 -mt-4"><TechnoSphere className="w-full h-full" animating={loading} /></div>
+              <div className="w-24 h-24 -mt-4">
+                <Suspense fallback={<div className="w-full h-full" />}>
+                  <TechnoSphere className="w-full h-full" animating={loading} />
+                </Suspense>
+              </div>
               {loading ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-4 py-8">
                   <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
@@ -129,7 +138,9 @@ const App = () => {
         {view === 'result' && (
           <div className="flex flex-col items-center gap-6 py-6 animate-in zoom-in duration-500">
             <div className="bg-[#1e293b] rounded-[40px] p-10 shadow-2xl text-center w-full relative border border-slate-700">
-              <TechnoSphere className="w-28 h-28 mx-auto -mt-20 mb-4" />
+              <Suspense fallback={<div className="w-28 h-28 mx-auto -mt-20 mb-4" />}>
+                <TechnoSphere className="w-28 h-28 mx-auto -mt-20 mb-4" />
+              </Suspense>
               <h2 className="text-3xl font-black text-white mb-2">Identità Trovata</h2>
               <div className="bg-slate-900/80 p-8 rounded-[32px] mb-8 border border-indigo-500/20">
                 <p className="text-4xl font-black text-white">{finalResult?.name}</p>
