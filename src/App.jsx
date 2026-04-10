@@ -28,20 +28,13 @@ const App = () => {
     const newHistory = [...history, { role: "user", content: userResponse }];
     
     try {
-      // Verifica che Puter.js sia caricato
-      if (!window.puter || !window.puter.ai) {
-        throw new Error("Puter.js non è caricato. Controlla la connessione o autorizza il dominio.");
-      }
+      // Costruisci il prompt completo
+      const fullPrompt = `${SYSTEM_PROMPT}\n\nStoria della conversazione:\n${newHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nUltimo input: ${userResponse}\n\nRispondi in formato JSON.`;
 
-      // Usiamo Puter.js per gestire la chat AI gratuitamente e senza API Key
-      const response = await window.puter.ai.chat([
-        { role: "system", content: SYSTEM_PROMPT },
-        ...newHistory
-      ], {
-        model: 'gemini-2.0-flash-exp', 
-      });
+      // Usiamo Puter.js con lo stesso approccio funzionante dell'utente
+      const response = await puter.ai.chat(fullPrompt);
 
-      let textResponse = response.message.content;
+      let textResponse = response.toString();
       const jsonMatch = textResponse.match(/\{.*\}/s);
       if (jsonMatch) textResponse = jsonMatch[0];
 
