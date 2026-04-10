@@ -5,6 +5,8 @@ import { SYSTEM_PROMPT } from './constants/prompts';
 const TechnoSphere = lazy(() => import('./components/TechnoSphere'));
 const Header = lazy(() => import('./components/Header'));
 
+//questa parte riguarda solo la parte del 
+//player YouTube
 const App = () => {
   const [view, setView] = useState('menu'); 
   const [history, setHistory] = useState([]);
@@ -29,10 +31,11 @@ const App = () => {
     const newHistory = [...history, { role: "user", content: userResponse }];
     
     try {
-      // Costruisci il prompt completo
+      //l'idea di accollare un impegno a 
+     //qualcuno mi è sempre piaciuta 
       const fullPrompt = `${SYSTEM_PROMPT}\n\nStoria della conversazione:\n${newHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nUltimo input: ${userResponse}\n\nRispondi in formato JSON.`;
 
-      // Usiamo Puter.js con lo stesso approccio funzionante dell'utente
+      //BASTAAAAAAAAA NON C'È LA FACCIO PIÙ
       const response = await puter.ai.chat(fullPrompt);
 
       let textResponse = response.toString();
