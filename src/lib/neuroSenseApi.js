@@ -1,14 +1,12 @@
 import { SYSTEM_PROMPT } from '../constants/prompts';
 
-// Client frontend per endpoint OpenAI-compatible basato su OllamaFreeAPI.
-// Crediti al progetto originale di mfoud444: https://github.com/mfoud444/ollamafreeapi
-const DEFAULT_BASE_URL = '/api/ollama-free';
+const DEFAULT_BASE_URL = '/api/ai';
 const DEFAULT_MODEL = '@cf/meta/llama-3-8b-instruct';
-const MODEL_OVERRIDE_STORAGE_KEY = 'neurosense.ollamafree.model';
-const BASE_URL_OVERRIDE_STORAGE_KEY = 'neurosense.ollamafree.baseUrl';
+const MODEL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.model';
+const BASE_URL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.baseUrl';
 
 const getConfiguredBaseUrl = () => {
-  const configuredBaseUrl = import.meta.env.VITE_OLLAMAFREE_API_BASE_URL?.trim();
+  const configuredBaseUrl = import.meta.env.VITE_AI_API_BASE_URL?.trim();
 
   if (!configuredBaseUrl) {
     return DEFAULT_BASE_URL;
@@ -67,7 +65,7 @@ export const setStoredModelOverride = (model) => {
 export const getOllamaFreeConfig = () => ({
   baseUrl: getBaseUrl(),
   configuredBaseUrl: getConfiguredBaseUrl(),
-  defaultModel: import.meta.env.VITE_OLLAMAFREE_MODEL || DEFAULT_MODEL,
+  defaultModel: import.meta.env.VITE_AI_MODEL || DEFAULT_MODEL,
   isUsingLocalProxy: getBaseUrl().startsWith('/'),
 });
 
@@ -140,12 +138,12 @@ export const requestNextTurn = async (history, modelOverride = '') => {
 
     if (isHostedStaticSite) {
       throw new Error(
-        'GitHub Pages non puo usare il proxy locale. Apri le impostazioni e inserisci un endpoint OllamaFreeAPI remoto con CORS abilitato.',
+        'GitHub Pages non puo usare il proxy locale. Apri le impostazioni e inserisci un endpoint AI remoto con CORS abilitato.',
       );
     }
 
     throw new Error(
-      `Connessione a OllamaFreeAPI non riuscita su ${baseUrl}. Verifica che il server sia acceso e raggiungibile.`,
+      `Connessione all'endpoint AI non riuscita su ${baseUrl}. Verifica che il servizio sia acceso e raggiungibile.`,
     );
   }
 

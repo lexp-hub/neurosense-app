@@ -10,7 +10,7 @@ const Header = ({ radioOn, setRadioOn, setShowSettings }) => (
       <div>
         <h1 className="text-md font-black tracking-tight uppercase">NeuroSense</h1>
         <p className="text-[8px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1">
-          <Zap size={8} className="text-amber-400" /> OllamaFreeAPI linked
+          <Zap size={8} className="text-amber-400" /> Cloudflare AI linked
         </p>
       </div>
     </div>

@@ -8,7 +8,7 @@ import {
   requestNextTurn,
   setStoredBaseUrlOverride,
   setStoredModelOverride,
-} from './lib/ollamaFreeApi';
+} from './lib/neuroSenseApi';
 import { getDemoNextTurn, isDemoModeEnabled } from './lib/demoMode';
 
 const TechnoSphere = lazy(() => import('./components/TechnoSphere'));
@@ -66,7 +66,7 @@ const App = () => {
           return;
         }
 
-        setSettingsError(error.message || 'Connessione al server OllamaFreeAPI non riuscita.');
+        setSettingsError(error.message || 'Connessione al servizio AI non riuscita.');
       } finally {
         if (!cancelled) {
           setModelsLoading(false);
@@ -120,7 +120,7 @@ const App = () => {
       }
 
     } catch (err) {
-      console.error("errore ollamafreeapi:", err);
+      console.error("errore ai:", err);
       const message = err instanceof Error ? err.message : 'Errore sconosciuto.';
       setGameError(message);
 
@@ -225,7 +225,7 @@ const App = () => {
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-200">
                   Questa build usa la modalita demo locale. Se vuoi la lettura completa con AI vera,
-                  apri le impostazioni e inserisci un endpoint remoto OllamaFreeAPI con CORS attivo.
+                  apri le impostazioni e inserisci un endpoint remoto con CORS attivo.
                 </p>
               </div>
             )}
@@ -369,7 +369,7 @@ const App = () => {
           <div className="bg-[#1e293b] p-6 rounded-3xl border border-slate-700 w-full max-w-md shadow-2xl">
             <div className="flex items-start justify-between gap-4 mb-5">
               <div>
-                <h2 className="text-lg font-black uppercase tracking-wide">OllamaFreeAPI</h2>
+                <h2 className="text-lg font-black uppercase tracking-wide">NeuroSense AI</h2>
                 <p className="text-sm text-slate-400">
                   Endpoint attivo: {ollamaFreeConfig.baseUrl}
                 </p>

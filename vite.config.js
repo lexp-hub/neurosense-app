@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const proxyTarget = env.VITE_OLLAMAFREE_PROXY_TARGET || 'http://127.0.0.1:8000';
+  const proxyTarget = env.VITE_AI_PROXY_TARGET || 'http://127.0.0.1:8000';
   const basePath = env.VITE_PUBLIC_BASE_PATH?.trim() || '/';
 
   return {
@@ -28,10 +28,10 @@ export default defineConfig(({ mode }) => {
     server: {
       host: true,
       proxy: {
-        '/api/ollama-free': {
+        '/api/ai': {
           target: proxyTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/ollama-free/, ''),
+          rewrite: (path) => path.replace(/^\/api\/ai/, ''),
         },
       },
     },

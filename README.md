@@ -1,93 +1,69 @@
 # 🔮 NeuroSense - Techno-Sphere
 
-**NeuroSense** è una web-app interattiva che reinterpreta l'esperienza classica di Akinator in una chiave futuristica e cyberpunk. Grazie all'integrazione con un endpoint OpenAI-compatible basato su **OllamaFreeAPI**, il sistema guida l'utente con domande mirate per indovinare personaggi, oggetti o animali, il tutto dentro un'interfaccia costruita con **React** e **Tailwind CSS**.
-
-![NeuroSense Preview](https://via.placeholder.com/800x400/0f172a/6366f1?text=NeuroSense+Techno-Sphere)
+**NeuroSense** è una web-app interattiva ispirata ad Akinator, con interfaccia cyberpunk e backend AI integrato nello stack Cloudflare.
 
 ## 🚀 Caratteristiche
 
-- **Techno-Sphere AI**: Un'interfaccia futuristica che reagisce alle tue risposte.
-- **Integrazione OllamaFreeAPI**: Usa un endpoint OpenAI-compatible basato su `ollamafreeapi` al posto di `puter.js`.
-- **Design Cyberpunk**: Interfaccia utente scura con accenti neon, animazioni fluide e stile moderno.
-- **Logica Avanzata**: Sistema di domande dinamico basato sulla cronologia della conversazione.
+- **Techno-Sphere AI**: interfaccia futuristica che reagisce alle risposte dell'utente.
+- **Cloudflare AI**: endpoint OpenAI-compatible servito da Pages Functions e Workers AI.
+- **Design Cyberpunk**: UI scura con accenti neon e animazioni fluide.
+- **Demo Mode**: fallback locale per mantenere l'app usabile anche senza endpoint AI remoto.
 
-## 🛠️ Tecnologie Utilizzate
+## 🛠️ Stack
 
-- **React 19** - Frontend framework
-- **Vite** - Build tool ultra-veloce
-- **Tailwind CSS** - Styling utility-first
-- **Cloudflare Pages Functions** - Backend serverless nello stesso progetto
-- **Cloudflare Workers AI** - Modelli AI gratuiti nel piano free
-- **Lucide React** - Set di icone eleganti e moderne
+- **React 19**
+- **Vite**
+- **Tailwind CSS**
+- **Cloudflare Pages**
+- **Cloudflare Pages Functions**
+- **Cloudflare Workers AI**
 
-## Crediti
+## Architettura
 
-L'integrazione AI usata in questa app si basa su **OllamaFreeAPI**, progetto creato da **mfoud444**.
+L'app non richiede più un server esterno separato.
 
-- Repository originale: `https://github.com/mfoud444/ollamafreeapi`
-- Grazie all'autore per aver reso disponibile il progetto open source.
-
-## Hosting Consigliato
-
-Questa app ora e pensata per essere pubblicata su **Cloudflare Pages** invece che su GitHub Pages.
-
-Motivo:
-
-- il frontend resta statico
-- l'endpoint `/api/ollama-free/*` viene servito da **Pages Functions**
-- il backend usa **Workers AI**, quindi non devi mantenere un server tuo
-- per un uso personale il piano free di Cloudflare e in genere sufficiente
-
-## Endpoint AI Integrato
-
-Nel repository sono gia inclusi:
-
-- `functions/api/ollama-free/v1/chat/completions.js`
-- `functions/api/ollama-free/v1/models.js`
-- `wrangler.toml`
-
-Queste Functions espongono un layer OpenAI-compatible sopra Workers AI, cosi il frontend puo continuare a chiamare:
-
-- `GET /api/ollama-free/v1/models`
-- `POST /api/ollama-free/v1/chat/completions`
-
-## Deploy su Cloudflare Pages
-
-1. Crea un progetto su Cloudflare Pages collegando questo repository.
-2. Imposta come build command:
-
-```bash
-npm run build
-```
-
-3. Imposta come build output directory:
-
-```bash
-dist
-```
-
-4. Verifica che il progetto usi il file `wrangler.toml` presente nel repo.
-5. Nel progetto Cloudflare aggiungi il binding AI chiamato `AI`.
-
-Il repository e gia configurato con:
-
-- `pages_build_output_dir = "dist"`
-- binding Workers AI `AI`
-- modello di default `@cf/meta/llama-3-8b-instruct`
+- il frontend gira su Cloudflare Pages
+- l'API gira sotto `functions/api/ai/*`
+- le route esposte al client sono:
+  - `GET /api/ai/v1/models`
+  - `POST /api/ai/v1/chat/completions`
+- il modello viene eseguito tramite Workers AI
 
 ## Configurazione Locale
 
-Per sviluppo locale puoi continuare a usare Vite con proxy:
+Esempio `.env`:
 
 ```bash
 VITE_PUBLIC_BASE_PATH=/
-VITE_OLLAMAFREE_PROXY_TARGET=http://127.0.0.1:8000
-VITE_OLLAMAFREE_MODEL=@cf/meta/llama-3-8b-instruct
+VITE_AI_PROXY_TARGET=http://127.0.0.1:8000
+VITE_AI_MODEL=@cf/meta/llama-3-8b-instruct
+# In alternativa:
+# VITE_AI_API_BASE_URL=https://your-ai-endpoint.example.com
 ```
 
-Se vuoi provare la build Cloudflare localmente:
+Per sviluppo locale:
+
+```bash
+npm run dev
+```
+
+Per preview Cloudflare locale:
 
 ```bash
 npm run build
 npm run cf:preview
 ```
+
+## Deploy su Cloudflare Pages
+
+1. Collega il repository a Cloudflare Pages.
+2. Build command: `npm run build`
+3. Build output directory: `dist`
+4. Mantieni il file `wrangler.toml` nel repo.
+5. Aggiungi il binding AI chiamato `AI`.
+
+Il progetto è già predisposto con:
+
+- [wrangler.toml](/home/lex/Desktop/neurosense-app/wrangler.toml:1)
+- endpoint AI in [functions/api/ai/v1/chat/completions.js](/home/lex/Desktop/neurosense-app/functions/api/ai/v1/chat/completions.js:1) e [functions/api/ai/v1/models.js](/home/lex/Desktop/neurosense-app/functions/api/ai/v1/models.js:1)
+- client frontend in [src/lib/neuroSenseApi.js](/home/lex/Desktop/neurosense-app/src/lib/neuroSenseApi.js:1)
