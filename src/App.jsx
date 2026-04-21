@@ -39,6 +39,7 @@ const App = () => {
   const runningOnGithubPages =
     typeof window !== 'undefined' && window.location.hostname.includes('github.io');
   const needsRemoteEndpointHint = runningOnGithubPages && ollamaFreeConfig.isUsingLocalProxy;
+  const canStartGame = !needsRemoteEndpointHint;
 
   useEffect(() => {
     if (!showSettings) {
@@ -80,6 +81,11 @@ const App = () => {
   }, [showSettings]);
 
   const startGame = async () => {
+    if (!canStartGame) {
+      setShowSettings(true);
+      return;
+    }
+
     setView('game');
     setHistory([]);
     setSteps(1);
@@ -226,7 +232,7 @@ const App = () => {
               onClick={startGame}
               className="w-full rounded-[24px] bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500 px-6 py-5 text-base font-black uppercase tracking-[0.18em] text-white shadow-[0_18px_50px_rgba(99,102,241,0.35)] transition-transform duration-200 hover:scale-[1.01]"
             >
-              INIZIA
+              {canStartGame ? 'INIZIA' : 'CONFIGURA API'}
             </button>
           </div>
         )}
