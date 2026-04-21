@@ -16,7 +16,7 @@
 - **Tailwind CSS**
 - **Cloudflare Pages**
 - **Cloudflare Pages Functions**
-- **Cloudflare Workers AI** (Modello: **Anthropic Claude Opus 4.7**)
+- **Cloudflare Workers AI** (Modello: **Moonshot Kimi k2.6**)
 
 ## Architettura
 
@@ -24,7 +24,7 @@ L'app utilizza un'architettura serverless basata su Cloudflare:
 
 - **Frontend:** React + Vite ospitato su Cloudflare Pages.
 - **Backend (API):** Cloudflare Pages Functions (`functions/api/ai/*`).
-- **Intelligenza Artificiale:** Cloudflare Workers AI con il modello `anthropic/claude-opus-4.7`.
+- **Intelligenza Artificiale:** Cloudflare Workers AI con il modello `@cf/moonshot/kimi-k2.6`.
 
 ## Configurazione
 
@@ -34,6 +34,6 @@ Il modello predefinito è configurato in `src/lib/neuroSenseApi.js`. È possibil
 
 Esempio `.env`:
 ```bash
-VITE_AI_MODEL=anthropic/claude-opus-4.7
+VITE_AI_MODEL=@cf/moonshot/kimi-k2.6
 ```
 

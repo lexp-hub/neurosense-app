@@ -1,7 +1,7 @@
 import { SYSTEM_PROMPT } from '../constants/prompts';
 
 const DEFAULT_BASE_URL = '/api/ai';
-const DEFAULT_MODEL = 'anthropic/claude-opus-4.7'; // Il nuovo mostro di Anthropic su Cloudflare
+const DEFAULT_MODEL = '@cf/moonshot/kimi-k2.6'; // L'ultima evoluzione di Kimi su Cloudflare
 const MODEL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.model';
 const BASE_URL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.baseUrl';
 
