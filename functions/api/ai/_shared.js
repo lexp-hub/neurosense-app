@@ -1,4 +1,4 @@
-const DEFAULT_MODEL = '@cf/moonshot/kimi-k2.6';
+const DEFAULT_MODEL = '@cf/meta/llama-3.1-8b-instruct'; // Passiamo a Llama 3.1 8B per maggiore stabilità
 
 const parseAllowedModels = (env) => {
   const configured = env.CF_ALLOWED_AI_MODELS?.trim();
