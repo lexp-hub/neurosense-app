@@ -1,4 +1,4 @@
-const DEFAULT_MODEL = '@cf/meta/llama-4-scout-17b-16e-instruct';
+const DEFAULT_MODEL = '@cf/moonshot/kimi-k2.6';
 
 const parseAllowedModels = (env) => {
   const configured = env.CF_ALLOWED_AI_MODELS?.trim();
