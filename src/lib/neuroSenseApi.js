@@ -126,7 +126,7 @@ export const requestNextTurn = async (history, modelOverride = '') => {
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...history,
-          { role: 'user', content: 'Rispondi solo con JSON valido, compatto e completo. Nessun testo fuori dal JSON.' },
+          { role: 'user', content: 'Rispondi solo con JSON valido, compatto e completo. Nessun testo fuori dal JSON, non usare blocchi ```json.' },
         ],
       }),
     });

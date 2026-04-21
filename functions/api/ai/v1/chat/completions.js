@@ -61,11 +61,15 @@ export const onRequestPost = async ({ request, env }) => {
       stream: false,
     });
 
+    // Debug della risposta grezza in produzione (opzionale, utile per Kimi)
+    console.log(`AI Response for ${selectedModel}:`, JSON.stringify(response));
+
     const content =
       response?.response ||
+      response?.answer ||
       getMessageText(response?.result?.response) ||
       getMessageText(response?.result) ||
-      '';
+      (typeof response === 'string' ? response : '');
 
     return jsonResponse({
       id: crypto.randomUUID(),
