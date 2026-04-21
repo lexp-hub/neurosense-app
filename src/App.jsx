@@ -557,7 +557,10 @@ const App = () => {
             <div className="flex items-start justify-between gap-4 mb-5">
               <div>
                 <h2 className="text-lg font-black uppercase tracking-wide">NeuroSense AI</h2>
-                <p className="text-sm text-slate-400">
+                <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mt-1">
+                  Powered by Claude Opus 4.7
+                </p>
+                <p className="text-xs text-slate-400 mt-2">
                   Endpoint attivo: {ollamaFreeConfig.baseUrl}
                 </p>
               </div>
