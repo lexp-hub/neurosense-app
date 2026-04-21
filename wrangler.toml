@@ -1,0 +1,10 @@
+name = "neurosense-app"
+compatibility_date = "2026-04-21"
+pages_build_output_dir = "dist"
+
+[ai]
+binding = "AI"
+
+[vars]
+CF_WORKERS_AI_MODEL = "@cf/meta/llama-3-8b-instruct"
+CF_ALLOWED_AI_MODELS = "@cf/meta/llama-3-8b-instruct"

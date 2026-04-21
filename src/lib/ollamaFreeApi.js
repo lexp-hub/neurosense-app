@@ -3,7 +3,7 @@ import { SYSTEM_PROMPT } from '../constants/prompts';
 // Client frontend per endpoint OpenAI-compatible basato su OllamaFreeAPI.
 // Crediti al progetto originale di mfoud444: https://github.com/mfoud444/ollamafreeapi
 const DEFAULT_BASE_URL = '/api/ollama-free';
-const DEFAULT_MODEL = 'llama3.2:3b';
+const DEFAULT_MODEL = '@cf/meta/llama-3-8b-instruct';
 const MODEL_OVERRIDE_STORAGE_KEY = 'neurosense.ollamafree.model';
 const BASE_URL_OVERRIDE_STORAGE_KEY = 'neurosense.ollamafree.baseUrl';
 

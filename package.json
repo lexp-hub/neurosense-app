@@ -8,8 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "cf:preview": "npx wrangler pages dev dist",
+    "cf:deploy": "npx wrangler pages deploy dist"
   },
   "dependencies": {
     "clsx": "^2.1.1",

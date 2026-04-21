@@ -9,6 +9,7 @@ import {
   setStoredBaseUrlOverride,
   setStoredModelOverride,
 } from './lib/ollamaFreeApi';
+import { getDemoNextTurn, isDemoModeEnabled } from './lib/demoMode';
 
 const TechnoSphere = lazy(() => import('./components/TechnoSphere'));
 const Header = lazy(() => import('./components/Header'));
@@ -39,7 +40,7 @@ const App = () => {
   const runningOnGithubPages =
     typeof window !== 'undefined' && window.location.hostname.includes('github.io');
   const needsRemoteEndpointHint = runningOnGithubPages && ollamaFreeConfig.isUsingLocalProxy;
-  const canStartGame = !needsRemoteEndpointHint;
+  const isDemoMode = needsRemoteEndpointHint && isDemoModeEnabled();
 
   useEffect(() => {
     if (!showSettings) {
@@ -81,11 +82,6 @@ const App = () => {
   }, [showSettings]);
 
   const startGame = async () => {
-    if (!canStartGame) {
-      setShowSettings(true);
-      return;
-    }
-
     setView('game');
     setHistory([]);
     setSteps(1);
@@ -102,7 +98,13 @@ const App = () => {
     const updatedHistory = [...history, { role: "user", content: input }];
 
     try {
-      let text = await requestNextTurn(updatedHistory, apiModel);
+      let text;
+
+      if (isDemoMode) {
+        text = JSON.stringify(getDemoNextTurn(updatedHistory));
+      } else {
+        text = await requestNextTurn(updatedHistory, apiModel);
+      }
 
       // in un grande fieno di aghi di pino, trova il cuore della mia sanità mentale
       const match = text.match(/\{.*\}/s);
@@ -222,8 +224,8 @@ const App = () => {
                   GitHub Pages
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-200">
-                  Questa build sta girando su hosting statico, quindi il proxy locale ` /api/ollama-free ` non esiste.
-                  Apri le impostazioni e inserisci un endpoint remoto OllamaFreeAPI con CORS attivo.
+                  Questa build usa la modalita demo locale. Se vuoi la lettura completa con AI vera,
+                  apri le impostazioni e inserisci un endpoint remoto OllamaFreeAPI con CORS attivo.
                 </p>
               </div>
             )}
@@ -232,7 +234,7 @@ const App = () => {
               onClick={startGame}
               className="w-full rounded-[24px] bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500 px-6 py-5 text-base font-black uppercase tracking-[0.18em] text-white shadow-[0_18px_50px_rgba(99,102,241,0.35)] transition-transform duration-200 hover:scale-[1.01]"
             >
-              {canStartGame ? 'INIZIA' : 'CONFIGURA API'}
+              INIZIA
             </button>
           </div>
         )}
@@ -242,7 +244,7 @@ const App = () => {
             <div className="rounded-[34px] border border-slate-700/80 bg-slate-800/95 p-6 text-center min-h-[520px] shadow-2xl backdrop-blur-md">
               <div className="mb-6 flex items-center justify-between gap-3">
                 <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
-                  Model: {apiModel}
+                  {isDemoMode ? 'Mode: Demo Locale' : `Model: ${apiModel}`}
                 </p>
                 <p className="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
                   Step {steps}
