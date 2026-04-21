@@ -1,5 +1,16 @@
 import { corsHeaders, jsonResponse, resolveModel } from '../../_shared.js';
 
+const TURN_SCHEMA = {
+  type: 'object',
+  required: ['question', 'isGuess', 'guess', 'reaction'],
+  properties: {
+    question: { type: 'string' },
+    isGuess: { type: 'boolean' },
+    guess: { type: 'string' },
+    reaction: { type: 'string' },
+  },
+};
+
 const getMessageText = (content) => {
   if (typeof content === 'string') {
     return content;
@@ -48,6 +59,7 @@ export const onRequestPost = async ({ request, env }) => {
       temperature: body?.temperature ?? 0.7,
       max_tokens: body?.max_tokens ?? 400,
       stream: false,
+      guided_json: TURN_SCHEMA,
     });
 
     const content =

@@ -1,7 +1,7 @@
 import { SYSTEM_PROMPT } from '../constants/prompts';
 
 const DEFAULT_BASE_URL = '/api/ai';
-const DEFAULT_MODEL = '@cf/meta/llama-3-8b-instruct';
+const DEFAULT_MODEL = '@cf/meta/llama-4-scout-17b-16e-instruct';
 const MODEL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.model';
 const BASE_URL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.baseUrl';
 
@@ -121,12 +121,12 @@ export const requestNextTurn = async (history, modelOverride = '') => {
       },
       body: JSON.stringify({
         model: selectedModel,
-        temperature: 0.7,
+        temperature: 0.25,
         stream: false,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...history,
-          { role: 'user', content: 'Rispondi solo con JSON valido.' },
+          { role: 'user', content: 'Rispondi solo con JSON valido, compatto e completo. Nessun testo fuori dal JSON.' },
         ],
       }),
     });

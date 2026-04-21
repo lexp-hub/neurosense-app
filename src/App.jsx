@@ -13,6 +13,125 @@ import { getDemoNextTurn, isDemoModeEnabled } from './lib/demoMode';
 
 const TechnoSphere = lazy(() => import('./components/TechnoSphere'));
 const Header = lazy(() => import('./components/Header'));
+const MIN_QUESTIONS_BEFORE_GUESS = 6;
+const MIN_GUESS_LENGTH = 3;
+const FALLBACK_QUESTIONS = [
+  'Si tratta di una persona reale?',
+  'È famoso soprattutto nel mondo dello spettacolo?',
+  'È un personaggio inventato?',
+  'È qualcosa che puoi trovare nella vita di tutti i giorni?',
+  'È conosciuto in tutto il mondo?',
+  'Ha un aspetto molto riconoscibile?',
+  'È legato soprattutto a film, serie, libri o videogiochi?',
+];
+
+const tryParseJsonBlock = (text) => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
+const recoverTurnFromText = (text) => {
+  const direct = tryParseJsonBlock(text);
+  if (direct) {
+    return direct;
+  }
+
+  const match = text.match(/\{[\s\S]*\}/);
+  if (match) {
+    const parsed = tryParseJsonBlock(match[0]);
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  const guessMatch = text.match(/"guess"\s*:\s*"([^"]*)/);
+  const questionMatch = text.match(/"question"\s*:\s*"([^"]*)/);
+  const reactionMatch = text.match(/"reaction"\s*:\s*"([^"]*)/);
+  const isGuessMatch = text.match(/"isGuess"\s*:\s*(true|false)/i);
+
+  const recovered = {
+    question: questionMatch?.[1] || '',
+    isGuess: isGuessMatch ? isGuessMatch[1].toLowerCase() === 'true' : false,
+    guess: guessMatch?.[1] || '',
+    reaction: reactionMatch?.[1] || '',
+  };
+
+  if (recovered.question || recovered.guess || recovered.reaction) {
+    return recovered;
+  }
+
+  return {
+    question: 'Stai pensando a una persona reale?',
+    isGuess: false,
+    guess: '',
+    reaction: 'Ho ricevuto una risposta confusa, quindi continuo con una domanda semplice.',
+  };
+};
+
+const sanitizeText = (value = '') =>
+  value
+    .replace(/^["'\s]+|["'\s]+$/g, '')
+    .replace(/\\"/g, '"')
+    .trim();
+
+const isBadGuess = (guess = '') => {
+  const normalized = sanitizeText(guess).toLowerCase();
+
+  return (
+    normalized.length < MIN_GUESS_LENGTH ||
+    ['si', 'sì', 'no', 'non lo so', 'forse', 'ok'].includes(normalized)
+  );
+};
+
+const forceQuestionTurn = (data, steps) => ({
+  question: FALLBACK_QUESTIONS[Math.min(Math.max(steps - 1, 0), FALLBACK_QUESTIONS.length - 1)],
+  isGuess: false,
+  guess: '',
+  reaction: data?.reaction || 'Voglio raccogliere ancora qualche indizio prima di sbilanciarmi.',
+});
+
+const getGuessImageCandidates = (guess) => {
+  const cleanGuess = sanitizeText(guess);
+  const variants = new Set([cleanGuess]);
+
+  if (cleanGuess.includes('(')) {
+    variants.add(cleanGuess.replace(/\s*\(.*?\)\s*/g, ' ').trim());
+  }
+
+  return [...variants].filter(Boolean);
+};
+
+const fetchGuessImage = async (guess) => {
+  const candidates = getGuessImageCandidates(guess);
+
+  for (const candidate of candidates) {
+    for (const lang of ['it', 'en']) {
+      const response = await fetch(
+        `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(candidate)}`,
+      );
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const data = await response.json();
+      const imageUrl = data?.originalimage?.source || data?.thumbnail?.source;
+
+      if (imageUrl) {
+        return {
+          url: imageUrl,
+          sourceLabel: `${lang.toUpperCase()} Wikipedia`,
+          pageUrl: data?.content_urls?.desktop?.page || '',
+        };
+      }
+    }
+  }
+
+  return null;
+};
 
 const App = () => {
   const [view, setView] = useState('menu'); 
@@ -26,6 +145,8 @@ const App = () => {
 
   const [steps, setSteps] = useState(0);
   const [result, setResult] = useState(null);
+  const [resultImage, setResultImage] = useState(null);
+  const [resultImageLoading, setResultImageLoading] = useState(false);
   const [availableModels, setAvailableModels] = useState([]);
   const [modelsLoading, setModelsLoading] = useState(false);
   const [settingsError, setSettingsError] = useState('');
@@ -81,11 +202,47 @@ const App = () => {
     };
   }, [showSettings]);
 
+  useEffect(() => {
+    if (view !== 'result' || !result?.name) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadImage = async () => {
+      setResultImage(null);
+      setResultImageLoading(true);
+
+      try {
+        const image = await fetchGuessImage(result.name);
+
+        if (!cancelled) {
+          setResultImage(image);
+        }
+      } catch {
+        if (!cancelled) {
+          setResultImage(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setResultImageLoading(false);
+        }
+      }
+    };
+
+    loadImage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [result, view]);
+
   const startGame = async () => {
     setView('game');
     setHistory([]);
     setSteps(1);
     setResult(null);
+    setResultImage(null);
     setGameError('');
 
     // prima chiamata mi commuovo 
@@ -106,14 +263,22 @@ const App = () => {
         text = await requestNextTurn(updatedHistory, apiModel);
       }
 
-      // in un grande fieno di aghi di pino, trova il cuore della mia sanità mentale
-      const match = text.match(/\{.*\}/s);
-      if (match) text = match[0];
-
-      const data = JSON.parse(text);
+      const recovered = recoverTurnFromText(text);
+      const normalizedData = {
+        question: sanitizeText(recovered.question),
+        isGuess: Boolean(recovered.isGuess),
+        guess: sanitizeText(recovered.guess),
+        reaction: sanitizeText(recovered.reaction),
+      };
+      const data =
+        normalizedData.isGuess &&
+        (steps < MIN_QUESTIONS_BEFORE_GUESS || isBadGuess(normalizedData.guess))
+          ? forceQuestionTurn(normalizedData, steps)
+          : normalizedData;
 
       setCurrent(data);
-      setHistory([...updatedHistory, { role: "assistant", content: text }]);
+      setHistory([...updatedHistory, { role: "assistant", content: JSON.stringify(data) }]);
+      setGameError('');
 
       if (!data.isGuess) {
         setSteps(prev => prev + 1);
@@ -121,14 +286,13 @@ const App = () => {
 
     } catch (err) {
       console.error("errore ai:", err);
-      const message = err instanceof Error ? err.message : 'Errore sconosciuto.';
-      setGameError(message);
+      setGameError('La risposta AI non era leggibile. Riprova tra un istante.');
 
       setCurrent({
         question: "Connessione persa con NeuroSense",
         isGuess: false,
         guess: "",
-        reaction: message,
+        reaction: 'La risposta ricevuta era corrotta o incompleta. Prova di nuovo.',
       });
     } finally {
       setLoading(false);
@@ -269,7 +433,7 @@ const App = () => {
                   <>
                     <p className="mb-3 text-xl font-medium leading-8 text-slate-50">
                       {current?.isGuess
-                        ? `E ${current.guess}?`
+                        ? `È ${current.guess}?`
                         : current?.question}
                     </p>
 
@@ -338,11 +502,21 @@ const App = () => {
 
         {view === 'result' && (
           <div className="rounded-[34px] border border-slate-700/80 bg-slate-800/95 p-8 text-center shadow-2xl backdrop-blur-md">
-            <div className="mx-auto mb-4 w-full max-w-[220px]">
-              <Suspense fallback={<div className="h-[220px]" />}>
-                <TechnoSphere className="w-full" />
-              </Suspense>
-            </div>
+            {resultImage ? (
+              <div className="mx-auto mb-5 overflow-hidden rounded-[28px] border border-slate-700 bg-slate-900/70">
+                <img
+                  src={resultImage.url}
+                  alt={result?.name}
+                  className="h-[240px] w-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="mx-auto mb-4 w-full max-w-[220px]">
+                <Suspense fallback={<div className="h-[220px]" />}>
+                  <TechnoSphere className="w-full" />
+                </Suspense>
+              </div>
+            )}
 
             <p className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-300">
               Identita trovata
@@ -351,8 +525,21 @@ const App = () => {
               {result?.name}
             </h2>
             <p className="mt-4 text-sm leading-6 text-slate-400">
-              NeuroSense ti ha letto in pochi step. Abbastanza prevedibile, in fondo.
+              {resultImageLoading
+                ? 'Sto cercando anche un\'immagine del soggetto...'
+                : 'Dovrebbe essere lui. Stavolta la risposta ha un po piu contesto.'}
             </p>
+
+            {resultImage?.pageUrl && (
+              <a
+                href={resultImage.pageUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-block text-sm text-indigo-300 underline underline-offset-4"
+              >
+                Apri fonte immagine
+              </a>
+            )}
 
             <button
               onClick={startGame}

@@ -1,4 +1,4 @@
-const DEFAULT_MODEL = '@cf/meta/llama-3-8b-instruct';
+const DEFAULT_MODEL = '@cf/meta/llama-4-scout-17b-16e-instruct';
 
 const parseAllowedModels = (env) => {
   const configured = env.CF_ALLOWED_AI_MODELS?.trim();

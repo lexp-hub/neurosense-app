@@ -6,5 +6,5 @@ pages_build_output_dir = "dist"
 binding = "AI"
 
 [vars]
-CF_WORKERS_AI_MODEL = "@cf/meta/llama-3-8b-instruct"
-CF_ALLOWED_AI_MODELS = "@cf/meta/llama-3-8b-instruct"
+CF_WORKERS_AI_MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct"
+CF_ALLOWED_AI_MODELS = "@cf/meta/llama-4-scout-17b-16e-instruct"

@@ -53,16 +53,28 @@ const DEMO_KNOWLEDGE = [
 
 const DEMO_QUESTIONS = [
   {
-    question: 'Stai pensando a qualcosa che esiste soprattutto in universi pop o immaginari?',
-    reaction: 'Modalita demo agganciata. Niente cloud, solo sinapsi locali ben calibrate.',
+    question: 'Stai pensando a un personaggio inventato?',
+    reaction: 'Partiamo con una domanda semplice.',
   },
   {
     question: 'Quel soggetto e umano?',
-    reaction: 'Stringiamo il buffer. Prova a non sabotare il protocollo con risposte vaghe.',
+    reaction: 'Bene, sto gia restringendo il campo.',
   },
   {
-    question: 'Quel soggetto e famoso soprattutto per combattimenti o poteri?',
-    reaction: 'La traiettoria si pulisce. Ancora un paio di bit e ti leggo dentro.',
+    question: 'E famoso soprattutto per avere poteri o per combattere?',
+    reaction: 'Ancora qualche indizio e provo a espormi.',
+  },
+  {
+    question: 'Compare soprattutto in film, serie, anime o videogiochi?',
+    reaction: 'Adesso il quadro si sta facendo piu chiaro.',
+  },
+  {
+    question: 'E molto conosciuto anche da chi non segue quel mondo?',
+    reaction: 'Sto capendo quanto sia iconico davvero.',
+  },
+  {
+    question: 'Ha un aspetto molto riconoscibile?',
+    reaction: 'Ultimo giro di indizi e poi provo a indovinare.',
   },
 ];
 
@@ -91,7 +103,7 @@ const buildFallbackGuess = (answers) => {
       question: '',
       isGuess: true,
       guess: 'mistero cosmico con scarsa collaborazione umana',
-      reaction: 'In demo mode fai il caotico, quindi improvviso. La colpa resta tua.',
+      reaction: 'Con cosi pochi indizi posso solo tentare un colpo di fantasia.',
     };
   }
 
@@ -99,7 +111,7 @@ const buildFallbackGuess = (answers) => {
     question: '',
     isGuess: true,
     guess: 'qualcosa fuori dal dataset demo',
-    reaction: 'Hai superato il campione locale. Per la lettura completa serve il backend vero.',
+    reaction: 'Sei uscito dal piccolo dataset demo, quindi qui vado a intuito.',
   };
 };
 
