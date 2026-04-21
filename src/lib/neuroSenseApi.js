@@ -1,7 +1,7 @@
 import { SYSTEM_PROMPT } from '../constants/prompts';
 
 const DEFAULT_BASE_URL = '/api/ai';
-const DEFAULT_MODEL = '@cf/meta/llama-3.1-8b-instruct'; // Llama 3.1 8B su Cloudflare
+const DEFAULT_MODEL = '@cf/meta/llama-3.2-3b-instruct'; // Llama 3.2 3B su Cloudflare
 const MODEL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.model';
 const BASE_URL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.baseUrl';
 

@@ -151,7 +151,10 @@ const App = () => {
   const [modelsLoading, setModelsLoading] = useState(false);
   const [settingsError, setSettingsError] = useState('');
   const [gameError, setGameError] = useState('');
-  const [apiModel, setApiModel] = useState(() => getStoredModelOverride() || getOllamaFreeConfig().defaultModel);
+  const [apiModel, setApiModel] = useState(() => {
+    const stored = getStoredModelOverride();
+    return stored || getOllamaFreeConfig().defaultModel;
+  });
   const [apiBaseUrl, setApiBaseUrl] = useState(() => getStoredBaseUrlOverride() || getOllamaFreeConfig().configuredBaseUrl);
 
   const ollamaFreeConfig = getOllamaFreeConfig();
