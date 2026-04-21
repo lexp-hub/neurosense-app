@@ -1,193 +1,327 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { RotateCcw, X, Loader2 } from 'lucide-react';
-import { SYSTEM_PROMPT } from './constants/prompts';
+import {
+  fetchAvailableModels,
+  getOllamaFreeConfig,
+  getStoredModelOverride,
+  requestNextTurn,
+  setStoredModelOverride,
+} from './lib/ollamaFreeApi';
 
 const TechnoSphere = lazy(() => import('./components/TechnoSphere'));
 const Header = lazy(() => import('./components/Header'));
 
-//questa parte riguarda solo la parte del 
-//player YouTube
 const App = () => {
   const [view, setView] = useState('menu'); 
   const [history, setHistory] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [current, setCurrent] = useState(null);
   const [loading, setLoading] = useState(false);
+
   const [radioOn, setRadioOn] = useState(false);
   const [ytUrl, setYtUrl] = useState('https://www.youtube.com/watch?v=jfKfPfyJRdk');
   const [showSettings, setShowSettings] = useState(false);
-  const [questionCount, setQuestionCount] = useState(0);
-  const [finalResult, setFinalResult] = useState(null);
+
+  const [steps, setSteps] = useState(0);
+  const [result, setResult] = useState(null);
+  const [availableModels, setAvailableModels] = useState([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const [settingsError, setSettingsError] = useState('');
+  const [apiModel, setApiModel] = useState(() => getStoredModelOverride() || getOllamaFreeConfig().defaultModel);
+
+  const ollamaFreeConfig = getOllamaFreeConfig();
+  const modelOptions = Array.from(
+    new Set([apiModel, ollamaFreeConfig.defaultModel, ...availableModels].filter(Boolean)),
+  );
+
+  useEffect(() => {
+    if (!showSettings) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadModels = async () => {
+      setModelsLoading(true);
+      setSettingsError('');
+
+      try {
+        const models = await fetchAvailableModels();
+
+        if (cancelled) {
+          return;
+        }
+
+        setAvailableModels(models);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        setSettingsError(error.message || 'Connessione al server OllamaFreeAPI non riuscita.');
+      } finally {
+        if (!cancelled) {
+          setModelsLoading(false);
+        }
+      }
+    };
+
+    loadModels();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showSettings]);
 
   const startGame = async () => {
     setView('game');
     setHistory([]);
-    setQuestionCount(1);
-    setFinalResult(null);
-    await fetchNextStep("Iniziamo questa danza mentale. Ti avverto: i miei algoritmi sono in ottima forma oggi. Fai pure la prima mossa.");
+    setSteps(1);
+    setResult(null);
+
+    // prima chiamata mi commuovo 
+    await nextStep("Ok partiamo, fai la prima domanda.");
   };
 
-  const fetchNextStep = async (userResponse) => {
+  const nextStep = async (input) => {
     setLoading(true);
-    const newHistory = [...history, { role: "user", content: userResponse }];
-    
+
+    const updatedHistory = [...history, { role: "user", content: input }];
+
     try {
-      // Costruisci il prompt completo con un tono più naturale
-      const fullPrompt = `${SYSTEM_PROMPT}\n\nSequenza sinaptica attuale:\n${newHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nUser Input: ${userResponse}\n\nProduci JSON.`;
+      let text = await requestNextTurn(updatedHistory, apiModel);
 
-      const response = await puter.ai.chat(fullPrompt);
+      // in un grande fieno di aghi di pino, trova il cuore della mia sanità mentale
+      const match = text.match(/\{.*\}/s);
+      if (match) text = match[0];
 
-      let textResponse = response.toString();
-      const jsonMatch = textResponse.match(/\{.*\}/s);
-      if (jsonMatch) textResponse = jsonMatch[0];
+      const data = JSON.parse(text);
 
-      const result = JSON.parse(textResponse);
-      setCurrentQuestion(result);
-      setHistory([...newHistory, { role: "assistant", content: textResponse }]);
-      if (!result.isGuess) setQuestionCount(prev => prev + 1);
-    } catch (error) {
-      console.error("Errore Puter:", error);
-      setCurrentQuestion({ 
-        question: "Interferenza fatale. La mia logica vacilla... ripeti il segnale?", 
-        reaction: "Sento il vuoto cosmico nei miei circuiti.",
-        isGuess: false, 
-        guess: "" 
+      setCurrent(data);
+      setHistory([...updatedHistory, { role: "assistant", content: text }]);
+
+      if (!data.isGuess) {
+        setSteps(prev => prev + 1);
+      }
+
+    } catch (err) {
+      console.error("errore ollamafreeapi:", err);
+
+      setCurrent({
+        question: "Ok qualcosa è andato storto... riprova",
+        isGuess: false,
+        guess: ""
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAnswer = (answer) => { 
-    if (!loading) {
-      const responses = {
-        "Sì": "Confermo la tua intuizione: Sì.",
-        "No": "Negativo. Proseguiamo.",
-        "Non lo so": "La tua indecisione alimenta la mia curiosità... o la mia noia."
-      };
-      fetchNextStep(responses[answer] || answer); 
+  const handleAnswer = (ans) => {
+    if (loading) return;
+
+    // Porca puttana che poeta, attenzione best programmatore ever twin.
+    nextStep(ans);
+  };
+
+  const handleGuess = (correct) => {
+    if (correct) {
+      setResult({ success: true, name: current.guess });
+      setView('result');
+    } else {
+      nextStep(`No, non era ${current.guess}`);
     }
   };
 
-  const handleGuessResult = (correct) => {
-    if (correct) {
-      setFinalResult({ success: true, name: currentQuestion.guess });
-      setView('result');
-    } else {
-      fetchNextStep(`Interferenza! Non era ${currentQuestion.guess}. Ricalibra.`);
-    }
+  const handleModelChange = (event) => {
+    const nextModel = event.target.value;
+    setApiModel(nextModel);
+    setStoredModelOverride(nextModel);
   };
 
   const getEmbedUrl = (url) => {
     try {
-      const id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
+      const id = url.includes('v=')
+        ? url.split('v=')[1].split('&')[0]
+        : url.split('/').pop();
+
       return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&loop=1&playlist=${id}`;
-    } catch { return ''; }
+    } catch {
+      return '';
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-[#f1f5f9] flex flex-col items-center p-4 font-sans select-none overflow-hidden">
+
+      {/* sfondo */}
       <div className="fixed inset-0 opacity-[0.1] pointer-events-none z-0">
-        <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+        <div
+          className="absolute top-0 left-0 w-full h-full"
+          style={{
+            backgroundImage:
+              'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+          }}
+        />
       </div>
 
       <Suspense fallback={<div className="h-16" />}>
-        <Header radioOn={radioOn} setRadioOn={setRadioOn} setShowSettings={setShowSettings} />
+        <Header
+          radioOn={radioOn}
+          setRadioOn={setRadioOn}
+          setShowSettings={setShowSettings}
+        />
       </Suspense>
 
       <main className="w-full max-w-md relative z-10 flex-1 flex flex-col justify-center">
+
         {view === 'menu' && (
-          <div className="flex flex-col items-center gap-8 py-4 animate-in fade-in zoom-in duration-700">
-            <div className="relative">
-                <div className="absolute inset-0 bg-indigo-500/20 blur-[50px] rounded-full"></div>
-                <Suspense fallback={<div className="w-56 h-56" />}>
-                  <TechnoSphere className="w-56 h-56 relative z-10" animating={true} />
-                </Suspense>
-            </div>
-            <div className="text-center space-y-3">
-              <h2 className="text-4xl font-black text-white leading-none tracking-tighter uppercase">Techno-Sphere</h2>
-              <p className="text-slate-400 font-medium px-10 text-sm leading-relaxed">Pensa a un soggetto. La sfera analizzerà i tuoi impulsi per rivelare la verità.</p>
-            </div>
-            <button onClick={startGame} className="w-full bg-indigo-600 text-white py-5 rounded-[24px] font-black text-lg shadow-xl hover:bg-indigo-500 active:scale-95 transition-all mt-4 border-t border-white/20">INIZIA RITUALE</button>
+          <div className="flex flex-col items-center gap-8 py-4">
+            <Suspense fallback={<div className="w-56 h-56" />}>
+              <TechnoSphere className="w-56 h-56" animating />
+            </Suspense>
+
+            <button
+              onClick={startGame}
+              className="w-full bg-indigo-600 text-white py-5 rounded-xl font-bold"
+            >
+              INIZIA
+            </button>
           </div>
         )}
 
         {view === 'game' && (
-          <div className="flex flex-col gap-5 animate-in slide-in-from-bottom-8 duration-500">
-            <div className="bg-[#1e293b]/90 backdrop-blur-lg rounded-[32px] p-8 shadow-2xl border border-slate-700 flex flex-col items-center text-center gap-6 relative min-h-[460px]">
-              <div className="w-24 h-24 -mt-4">
-                <Suspense fallback={<div className="w-full h-full" />}>
-                  <TechnoSphere className="w-full h-full" animating={loading} />
-                </Suspense>
-              </div>
+          <div className="flex flex-col gap-5">
+            <div className="bg-[#1e293b] rounded-2xl p-6 text-center min-h-[400px]">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
+                Model: {apiModel}
+              </p>
+
+              <Suspense fallback={<div />}>
+                <TechnoSphere animating={loading} />
+              </Suspense>
+
               {loading ? (
-                <div className="flex-1 flex flex-col items-center justify-center gap-4 py-8">
-                  <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
-                  <p className="font-black text-indigo-400 tracking-tighter text-xs uppercase animate-pulse">Analisi neurale in corso...</p>
-                </div>
+                <Loader2 className="animate-spin mx-auto mt-6" />
               ) : (
                 <>
-                  <div className="flex-1 flex flex-col items-center justify-center gap-4">
-                    {currentQuestion?.reaction && (
-                      <div className="bg-indigo-500/10 text-indigo-300 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full border border-indigo-500/20 mb-2 animate-in fade-in slide-in-from-top-2">
-                        "{currentQuestion.reaction}"
-                      </div>
-                    )}
-                    <h3 className="text-2xl font-black text-white leading-tight px-2">
-                      {currentQuestion?.isGuess ? `Ho visualizzato il segnale: è ${currentQuestion.guess}?` : currentQuestion?.question}
-                    </h3>
-                  </div>
-                  {currentQuestion?.isGuess ? (
-                    <div className="grid grid-cols-1 gap-3 w-full">
-                      <button onClick={() => handleGuessResult(true)} className="bg-green-600 text-white p-5 rounded-2xl font-black active:scale-95">SÌ!</button>
-                      <button onClick={() => handleGuessResult(false)} className="bg-slate-800 text-slate-400 p-4 rounded-2xl font-black active:scale-95">NO, RICALIBRA</button>
-                    </div>
+                  <h3 className="text-xl mt-4">
+                    {current?.isGuess
+                      ? `È ${current.guess}?`
+                      : current?.question}
+                  </h3>
+
+                  {current?.isGuess ? (
+                    <>
+                      <button onClick={() => handleGuess(true)}>Sì</button>
+                      <button onClick={() => handleGuess(false)}>No</button>
+                    </>
                   ) : (
-                    <div className="grid grid-cols-2 gap-3 w-full">
-                      <button onClick={() => handleAnswer("Sì")} className="bg-indigo-600 text-white p-5 rounded-2xl font-black text-lg active:scale-95">SÌ</button>
-                      <button onClick={() => handleAnswer("No")} className="bg-slate-800 text-indigo-400 border border-indigo-900/50 p-5 rounded-2xl font-black text-lg active:scale-95">NO</button>
-                      <button onClick={() => handleAnswer("Non lo so")} className="col-span-2 bg-slate-900/50 text-slate-500 p-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">Dato Incerto</button>
-                    </div>
+                    <>
+                      <button onClick={() => handleAnswer("Sì")}>Sì</button>
+                      <button onClick={() => handleAnswer("No")}>No</button>
+                      <button onClick={() => handleAnswer("Non lo so")}>
+                        Boh
+                      </button>
+                    </>
                   )}
                 </>
               )}
             </div>
-            <button onClick={() => setView('menu')} className="w-full bg-red-600/20 text-red-400 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600/30 transition-all">ANNULLA PARTITA</button>
+
+            <button onClick={() => setView('menu')}>
+              TORNA DA DOVE SEI VENUTO!!!
+            </button>
           </div>
         )}
 
         {view === 'result' && (
-          <div className="flex flex-col items-center gap-6 py-6 animate-in zoom-in duration-500">
-            <div className="bg-[#1e293b] rounded-[40px] p-10 shadow-2xl text-center w-full relative border border-slate-700">
-              <Suspense fallback={<div className="w-28 h-28 mx-auto -mt-20 mb-4" />}>
-                <TechnoSphere className="w-28 h-28 mx-auto -mt-20 mb-4" />
-              </Suspense>
-              <h2 className="text-3xl font-black text-white mb-2">Identità Trovata</h2>
-              <div className="bg-slate-900/80 p-8 rounded-[32px] mb-8 border border-indigo-500/20">
-                <p className="text-4xl font-black text-white">{finalResult?.name}</p>
-              </div>
-              <button onClick={startGame} className="w-full bg-indigo-600 text-white py-5 rounded-full font-black text-lg flex items-center justify-center gap-2 active:scale-95">
-                <RotateCcw size={20} /> RIAVVIA
-              </button>
-            </div>
+          <div className="text-center">
+            <h2>Era:</h2>
+            <h1>{result?.name}</h1>
+
+            <button onClick={startGame}>
+              <RotateCcw /> Riprova
+            </button>
           </div>
         )}
       </main>
 
       {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
-          <div className="bg-[#1e293b] w-full max-w-sm rounded-[32px] p-8 shadow-2xl border border-slate-700">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black text-white">CONSOLE</h3>
-              <button onClick={() => setShowSettings(false)} className="text-slate-500"><X /></button>
+        <div className="fixed inset-0 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm z-20 p-4">
+          <div className="bg-[#1e293b] p-6 rounded-3xl border border-slate-700 w-full max-w-md shadow-2xl">
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <h2 className="text-lg font-black uppercase tracking-wide">OllamaFreeAPI</h2>
+                <p className="text-sm text-slate-400">
+                  Endpoint attivo: {ollamaFreeConfig.baseUrl}
+                </p>
+              </div>
+              <button onClick={() => setShowSettings(false)}>
+                <X />
+              </button>
             </div>
-            <input type="text" value={ytUrl} onChange={(e) => setYtUrl(e.target.value)} className="w-full bg-slate-900 border border-slate-800 text-white p-4 rounded-xl mb-4" />
-            <button onClick={() => setShowSettings(false)} className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase">Applica</button>
+
+            <label className="block text-sm font-bold text-slate-200 mb-2">
+              Modello
+            </label>
+
+            <select
+              value={apiModel}
+              onChange={handleModelChange}
+              className="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-3 text-slate-100 mb-3"
+            >
+              {modelOptions.map((model) => (
+                <option key={model} value={model}>
+                  {model}
+                  {model === ollamaFreeConfig.defaultModel ? ' (default)' : ''}
+                </option>
+              ))}
+            </select>
+
+            <p className="text-xs text-slate-400 mb-4">
+              Il modello selezionato viene salvato solo in questo browser.
+            </p>
+
+            <div className="rounded-2xl bg-slate-900/70 border border-slate-800 p-4 mb-5">
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-500 mb-2">
+                Stato connessione
+              </p>
+              {modelsLoading && (
+                <p className="text-sm text-slate-300">Recupero modelli disponibili...</p>
+              )}
+
+              {!modelsLoading && settingsError && (
+                <p className="text-sm text-rose-300">{settingsError}</p>
+              )}
+
+              {!modelsLoading && !settingsError && (
+                <p className="text-sm text-emerald-300">
+                  Server raggiungibile. Modelli trovati: {availableModels.length || 1}
+                </p>
+              )}
+            </div>
+
+            <label className="block text-sm font-bold text-slate-200 mb-2">
+              Radio URL
+            </label>
+
+            <input
+              value={ytUrl}
+              onChange={(e) => setYtUrl(e.target.value)}
+              className="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-3 text-slate-100"
+            />
           </div>
         </div>
       )}
 
-      {radioOn && <div className="hidden"><iframe src={getEmbedUrl(ytUrl)} allow="autoplay"></iframe></div>}
-      <footer className="mt-auto mb-2 opacity-20"><p className="text-white text-[8px] font-black uppercase tracking-[0.8em]">NeuroSense AI</p></footer>
+      {radioOn && (
+        <iframe
+          className="hidden"
+          src={getEmbedUrl(ytUrl)}
+          allow="autoplay"
+        />
+      )}
     </div>
   );
 };
