@@ -42,24 +42,33 @@ export const onRequestOptions = async () =>
   });
 
 export const onRequestPost = async ({ request, env }) => {
-  if (!env.AI) {
-    return jsonResponse(
-      {
-        error: 'Workers AI binding mancante. Configura il binding `AI` nel progetto Cloudflare Pages.',
-      },
-      500,
-    );
-  }
-
   try {
+    if (!env.AI) {
+      console.error('AI Binding missing');
+      return jsonResponse(
+        {
+          error: 'Workers AI binding mancante. Assicurati che il binding chiamato "AI" sia configurato nelle impostazioni delle Pages Functions su Cloudflare.',
+          context: 'check_cloudflare_dashboard_bindings'
+        },
+        500,
+      );
+    }
+
     const body = await request.json();
     const selectedModel = resolveModel(env, body?.model);
+    
+    console.log(`Invocazione modello: ${selectedModel}`);
+
     const response = await env.AI.run(selectedModel, {
       messages: body?.messages || [],
       temperature: body?.temperature ?? 0.7,
       max_tokens: body?.max_tokens ?? 400,
       stream: false,
     });
+
+    if (!response) {
+      throw new Error('Il modello AI non ha restituito alcuna risposta.');
+    }
 
     // Debug della risposta grezza in produzione (opzionale, utile per Kimi)
     console.log(`AI Response for ${selectedModel}:`, JSON.stringify(response));

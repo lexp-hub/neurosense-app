@@ -1,9 +1,10 @@
 import { SYSTEM_PROMPT } from '../constants/prompts';
 
 const DEFAULT_BASE_URL = '/api/ai';
-const DEFAULT_MODEL = '@cf/meta/llama-3.2-3b-instruct'; // Llama 3.2 3B su Cloudflare
+const DEFAULT_MODEL = '@cf/moonshot/kimi-k2.6'; // Moonshot Kimi k2.6 su Cloudflare
 const MODEL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.model';
 const BASE_URL_OVERRIDE_STORAGE_KEY = 'neurosense.ai.baseUrl';
+const API_KEY_STORAGE_KEY = 'neurosense.ai.apiKey';
 
 const getConfiguredBaseUrl = () => {
   const configuredBaseUrl = import.meta.env.VITE_AI_API_BASE_URL?.trim();
@@ -40,6 +41,20 @@ export const setStoredBaseUrlOverride = (baseUrl) => {
 };
 
 const getBaseUrl = () => getStoredBaseUrlOverride() || getConfiguredBaseUrl();
+
+export const getStoredApiKey = () => {
+  if (typeof window === 'undefined') return '';
+  return window.localStorage.getItem(API_KEY_STORAGE_KEY) || '';
+};
+
+export const setStoredApiKey = (key) => {
+  if (typeof window === 'undefined') return;
+  if (!key) {
+    window.localStorage.removeItem(API_KEY_STORAGE_KEY);
+    return;
+  }
+  window.localStorage.setItem(API_KEY_STORAGE_KEY, key.trim());
+};
 
 export const getStoredModelOverride = () => {
   if (typeof window === 'undefined') {
@@ -95,7 +110,18 @@ const extractMessageContent = (content) => {
 };
 
 export const fetchAvailableModels = async () => {
-  const response = await fetch(`${getBaseUrl()}/v1/models`);
+  const baseUrl = getBaseUrl();
+  const apiKey = getStoredApiKey();
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
+
+  const response = await fetch(`${baseUrl}/v1/models`, { headers });
 
   if (!response.ok) {
     throw new Error(`Impossibile recuperare i modelli (${response.status}).`);
@@ -111,14 +137,23 @@ export const fetchAvailableModels = async () => {
 export const requestNextTurn = async (history, modelOverride = '') => {
   const selectedModel = modelOverride || getStoredModelOverride() || getOllamaFreeConfig().defaultModel;
   const baseUrl = getBaseUrl();
+  const apiKey = getStoredApiKey();
+  
   let response;
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
 
   try {
     response = await fetch(`${baseUrl}/v1/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         model: selectedModel,
         temperature: 0.25,
@@ -128,9 +163,19 @@ export const requestNextTurn = async (history, modelOverride = '') => {
           ...history,
           { role: 'user', content: 'Rispondi solo con JSON valido, compatto e completo. Nessun testo fuori dal JSON, non usare blocchi ```json.' },
         ],
+        response_format: selectedModel.includes('gpt') || selectedModel.includes('llama-3') || selectedModel.includes('kimi') || selectedModel.includes('k2.6')
+          ? { type: "json_object" } 
+          : undefined
       }),
     });
   } catch (error) {
+    // Se l'errore è TypeError e siamo nel browser, è quasi certamente un problema di CORS
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error(
+        'Blocco di sicurezza (CORS): Il browser impedisce la chiamata diretta a Cloudflare. Usa il proxy locale in dev o un Worker in produzione.'
+      );
+    }
+
     const isHostedStaticSite =
       typeof window !== 'undefined' &&
       window.location.hostname.includes('github.io') &&
@@ -152,16 +197,26 @@ export const requestNextTurn = async (history, modelOverride = '') => {
 
     try {
       const errorData = await response.json();
-      errorMessage = errorData.detail || errorData.error || errorMessage;
+      // Mostriamo l'errore specifico se presente
+      errorMessage = errorData.error || errorData.detail || errorMessage;
+      if (errorData.context) errorMessage += ` (${errorData.context})`;
     } catch {
-      // Ignore invalid JSON error payloads and preserve the HTTP status.
+      // Se non è JSON, prendiamo il testo
+      const errorText = await response.text().catch(() => '');
+      if (errorText) errorMessage = `${errorMessage}: ${errorText.substring(0, 100)}`;
     }
 
     throw new Error(errorMessage);
   }
 
   const data = await response.json();
-  const text = extractMessageContent(data?.choices?.[0]?.message?.content);
+  
+  // Gestione flessibile per diversi formati di risposta (Cloudflare vs OpenAI standard)
+  const text = extractMessageContent(
+    data?.choices?.[0]?.message?.content || 
+    data?.choices?.[0]?.text || 
+    data?.result?.response
+  );
 
   if (!text) {
     throw new Error('Risposta del modello vuota o in formato inatteso.');

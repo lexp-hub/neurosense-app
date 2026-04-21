@@ -4,9 +4,11 @@ import {
   fetchAvailableModels,
   getOllamaFreeConfig,
   getStoredBaseUrlOverride,
+  getStoredApiKey,
   getStoredModelOverride,
   requestNextTurn,
   setStoredBaseUrlOverride,
+  setStoredApiKey,
   setStoredModelOverride,
 } from './lib/neuroSenseApi';
 import { getDemoNextTurn, isDemoModeEnabled } from './lib/demoMode';
@@ -39,7 +41,13 @@ const recoverTurnFromText = (text) => {
     return direct;
   }
 
-  const match = text.match(/\{[\s\S]*\}/);
+  // Rimuove blocchi markdown ```json ... ``` se presenti
+  const cleanText = text
+    .replace(/```json/g, '')
+    .replace(/```/g, '')
+    .trim();
+
+  const match = cleanText.match(/\{[\s\S]*\}/);
   if (match) {
     const parsed = tryParseJsonBlock(match[0]);
     if (parsed) {
@@ -156,6 +164,7 @@ const App = () => {
     return stored || getOllamaFreeConfig().defaultModel;
   });
   const [apiBaseUrl, setApiBaseUrl] = useState(() => getStoredBaseUrlOverride() || getOllamaFreeConfig().configuredBaseUrl);
+  const [apiKey, setApiKey] = useState(() => getStoredApiKey());
 
   const ollamaFreeConfig = getOllamaFreeConfig();
   const modelOptions = Array.from(
@@ -287,8 +296,13 @@ const App = () => {
       }
 
     } catch (err) {
-      console.error("errore ai:", err);
-      setGameError('La risposta AI non era leggibile. Riprova tra un istante.');
+      console.error("DEBUG NEUROSENSE - Errore Comunicazione AI:", {
+        message: err.message,
+        baseUrl: apiBaseUrl,
+        model: apiModel,
+        err
+      });
+      setGameError(`Errore AI: ${err.message}`);
 
       setCurrent({
         question: "Connessione persa con NeuroSense",
@@ -329,14 +343,17 @@ const App = () => {
   const applyApiSettings = () => {
     setStoredBaseUrlOverride(apiBaseUrl);
     setStoredModelOverride(apiModel);
+    setStoredApiKey(apiKey);
     setShowSettings(false);
   };
 
   const resetApiSettings = () => {
     setApiBaseUrl(ollamaFreeConfig.configuredBaseUrl);
     setApiModel(ollamaFreeConfig.defaultModel);
+    setApiKey('');
     setStoredBaseUrlOverride('');
     setStoredModelOverride('');
+    setStoredApiKey('');
     setShowSettings(false);
   };
 
@@ -577,12 +594,30 @@ const App = () => {
             <input
               value={apiBaseUrl}
               onChange={handleBaseUrlChange}
-              placeholder="https://your-ollamafree-instance.example.com"
+              placeholder="https://api.cloudflare.com/client/v4/accounts/TUO_ID/ai"
               className="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-3 text-slate-100 mb-2"
             />
 
             <p className="text-xs text-slate-400 mb-4 leading-5">
-              In locale puoi lasciare vuoto e usare il proxy Vite. Su GitHub Pages serve un endpoint remoto con CORS abilitato.
+              Per Cloudflare (Direct): <code>https://api.cloudflare.com/client/v4/accounts/5409693716803be3df6614f05165ccdb/ai</code>. <br/>
+              Se usi Cloudflare Pages con Functions, usa il default: <code>/api/ai</code>.
+              Su GitHub Pages serve un endpoint remoto con CORS abilitato.
+            </p>
+
+            <label className="block text-sm font-bold text-slate-200 mb-2">
+              API Key (opzionale)
+            </label>
+
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-..."
+              className="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-3 text-slate-100 mb-2"
+            />
+
+            <p className="text-xs text-slate-400 mb-4">
+              Necessaria per OpenAI, Groq, etc. Non necessaria per Ollama locale.
             </p>
 
             <label className="block text-sm font-bold text-slate-200 mb-2">
