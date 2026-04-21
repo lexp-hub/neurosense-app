@@ -245,7 +245,6 @@ const App = () => {
     setResultImage(null);
     setGameError('');
 
-    // prima chiamata mi commuovo 
     await nextStep("Ok partiamo, fai la prima domanda.");
   };
 
@@ -302,7 +301,6 @@ const App = () => {
   const handleAnswer = (ans) => {
     if (loading) return;
 
-    // Porca puttana che poeta, attenzione best programmatore ever twin.
     nextStep(ans);
   };
 
