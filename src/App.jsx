@@ -15,7 +15,7 @@ import { getDemoNextTurn, isDemoModeEnabled } from './lib/demoMode';
 
 const TechnoSphere = lazy(() => import('./components/TechnoSphere'));
 const Header = lazy(() => import('./components/Header'));
-const MIN_QUESTIONS_BEFORE_GUESS = 6;
+const MIN_QUESTIONS_BEFORE_GUESS = 8;
 const MIN_GUESS_LENGTH = 3;
 const FALLBACK_QUESTIONS = [
   'Si tratta di una persona reale?',
@@ -147,6 +147,7 @@ const App = () => {
   const [current, setCurrent] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [rejectedGuesses, setRejectedGuesses] = useState([]);
   const [radioOn, setRadioOn] = useState(false);
   const [ytUrl, setYtUrl] = useState('https://www.youtube.com/watch?v=jfKfPfyJRdk');
   const [showSettings, setShowSettings] = useState(false);
@@ -255,6 +256,7 @@ const App = () => {
     setSteps(1);
     setResult(null);
     setResultImage(null);
+    setRejectedGuesses([]);
     setGameError('');
 
     await nextStep("Ok partiamo, fai la prima domanda.");
@@ -271,7 +273,22 @@ const App = () => {
       if (isDemoMode) {
         text = JSON.stringify(getDemoNextTurn(updatedHistory));
       } else {
-        text = await requestNextTurn(updatedHistory, apiModel);
+        // Prepariamo istruzioni dinamiche basate sullo stato del gioco
+        const guidance = `[REGOLE ATTUALI: Turno ${steps}. ` + 
+          (rejectedGuesses.length > 0 ? `NON proporre mai: ${rejectedGuesses.join(', ')}. ` : '') +
+          (steps < MIN_QUESTIONS_BEFORE_GUESS ? "È proibito indovinare ora, fai solo una domanda chiusa." : "Puoi indovinare solo se sei molto sicuro.") + 
+          "]";
+        
+        const guidedHistory = [...updatedHistory];
+        if (guidedHistory.length > 0) {
+          const lastIndex = guidedHistory.length - 1;
+          guidedHistory[lastIndex] = {
+            ...guidedHistory[lastIndex],
+            content: `${guidedHistory[lastIndex].content}\n\n${guidance}`
+          };
+        }
+
+        text = await requestNextTurn(guidedHistory, apiModel);
       }
 
       const recovered = recoverTurnFromText(text);
@@ -326,7 +343,8 @@ const App = () => {
       setResult({ success: true, name: current.guess });
       setView('result');
     } else {
-      nextStep(`No, non era ${current.guess}`);
+      setRejectedGuesses(prev => [...prev, current.guess]);
+      nextStep(`No, non è ${current.guess}. Escludi questo personaggio per sempre e fammi un'altra domanda chiusa per capire meglio.`);
     }
   };
 

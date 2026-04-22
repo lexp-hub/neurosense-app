@@ -159,9 +159,12 @@ export const requestNextTurn = async (history, modelOverride = '') => {
         temperature: 0.25,
         stream: false,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { 
+            role: 'system', 
+            content: `${SYSTEM_PROMPT}\n\nVINCOLI STRETTI:\n1. Fai SOLO domande chiuse (Sì/No/Non lo so).\n2. Se un'ipotesi è stata rifiutata, non riproporla mai più.\n3. Sii logico e usa le risposte precedenti per restringere il campo.` 
+          },
           ...history,
-          { role: 'user', content: 'Rispondi solo con JSON valido, compatto e completo. Nessun testo fuori dal JSON, non usare blocchi ```json.' },
+          { role: 'user', content: 'Genera il prossimo turno nel formato JSON richiesto. Non aggiungere testo libero prima o dopo il JSON. Assicurati che "question" sia una domanda a cui si possa rispondere solo con Sì o No.' },
         ],
         response_format: selectedModel.includes('gpt') || selectedModel.includes('llama-3') || selectedModel.includes('kimi') || selectedModel.includes('k2.6')
           ? { type: "json_object" } 
