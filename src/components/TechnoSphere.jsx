@@ -7,7 +7,7 @@ const TechnoSphere = ({ animating }) => {
       <div className={`absolute inset-0 bg-indigo-500/20 rounded-full blur-[60px] transition-all duration-1000 ${animating ? 'scale-125 opacity-100' : 'scale-100 opacity-50'}`} />
       
       {/* Sfera centrale */}
-      <div className={`relative w-48 h-48 rounded-full bg-gradient-to-tr from-indigo-900 via-slate-900 to-indigo-600 border border-white/10 shadow-2xl flex items-center justify-center overflow-hidden`}>
+      <div className={`relative w-full h-full aspect-square max-w-[250px] max-h-[250px] rounded-full bg-gradient-to-tr from-indigo-900 via-slate-900 to-indigo-600 border border-white/10 shadow-2xl flex items-center justify-center overflow-hidden`}>
         
         {/* Cerchi rotanti interni */}
         <div className={`absolute w-full h-full border-2 border-indigo-500/30 rounded-full border-t-transparent animate-[spin_3s_linear_infinite] ${animating ? 'opacity-100' : 'opacity-40'}`} />
