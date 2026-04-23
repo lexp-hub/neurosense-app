@@ -21,7 +21,7 @@ const App = () => {
   const [radioOn, setRadioOn] = useState(false);
   const [models, setModels] = useState([]);
   const [config, setConfig] = useState({
-    model: getStoredModelOverride() || '@cf/meta/llama-3.2-3b-instruct',
+    model: getStoredModelOverride() || '@cf/meta/llama-3.1-70b-instruct',
     baseUrl: getStoredBaseUrlOverride() || '/api/ai'
   });
 
@@ -132,22 +132,47 @@ const App = () => {
                   </button>
                 </div>
 
-                <p className="text-slate-400 italic mb-3 text-sm font-medium opacity-80">
-                  "{current.reaction || 'Analisi flussi...'}"
-                </p>
-                <h2 className="text-2xl font-bold mb-10 leading-tight tracking-tight text-white">
-                  {current.isGuess ? `L'entità rilevata è ${current.guess}?` : current.question}
-                </h2>
-
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <button onClick={() => nextStep("Sì")} className="bg-[#4f46e5] p-5 rounded-3xl font-bold text-xl active:scale-95 shadow-lg shadow-indigo-900/40 hover:bg-indigo-500 transition-all">Sì</button>
-                    <button onClick={() => nextStep("No")} className="bg-slate-800/80 p-5 rounded-3xl font-bold text-xl border border-white/5 active:scale-95 hover:bg-slate-700 transition-all">No</button>
+                {current.gameOver ? (
+                  <div className="text-center animate-in zoom-in duration-500">
+                    <h2 className="text-2xl font-black mb-2 text-indigo-400 uppercase">Partita Conclusa</h2>
+                    <p className="text-slate-400 mb-8 text-sm italic">"{current.reaction}"</p>
+                    
+                    <button 
+                      onClick={() => setGameStarted(false)}
+                      className="w-full bg-indigo-600 p-5 rounded-3xl font-bold text-lg shadow-[0_0_30px_rgba(79,70,229,0.4)] hover:bg-indigo-500 transition-all uppercase tracking-widest"
+                    >
+                      Nuova Scansione
+                    </button>
                   </div>
-                  <button onClick={() => nextStep("Non lo so")} className="bg-slate-800/80 p-5 rounded-3xl font-bold text-xl border border-white/5 active:scale-95 text-[11px] uppercase tracking-[0.2em] hover:text-slate-300 transition-all">
-                    Non lo so
-                  </button>
-                </div>
+                ) : (
+                  <>
+                    <p className="text-slate-400 italic mb-3 text-sm font-medium opacity-80">
+                      "{current.reaction || 'Analisi flussi...'}"
+                    </p>
+                    <h2 className="text-2xl font-bold mb-10 leading-tight tracking-tight text-white">
+                      {current.isGuess ? `L'entità rilevata è ${current.guess}?` : current.question}
+                    </h2>
+
+                    {current.isGuess && current.imageUrl && (
+                      <div className="mb-8 overflow-hidden rounded-3xl border border-white/10 bg-black/20">
+                        <img src={current.imageUrl} alt={current.guess} className="w-full h-48 object-cover opacity-80" />
+                        {current.description && (
+                          <p className="p-4 text-[10px] leading-relaxed text-slate-400 uppercase tracking-tight">{current.description}</p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <button onClick={() => nextStep("Sì")} className="bg-[#4f46e5] p-5 rounded-3xl font-bold text-xl active:scale-95 shadow-lg shadow-indigo-900/40 hover:bg-indigo-500 transition-all">Sì</button>
+                        <button onClick={() => nextStep("No")} className="bg-slate-800/80 p-5 rounded-3xl font-bold text-xl border border-white/5 active:scale-95 hover:bg-slate-700 transition-all">No</button>
+                      </div>
+                      <button onClick={() => nextStep("Non lo so")} className="w-full bg-slate-800/80 p-5 rounded-3xl font-bold text-xl border border-white/5 active:scale-95 text-[11px] tracking-[0.2em] hover:text-slate-300 transition-all">
+                        Non so
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )
           )}
