@@ -9,13 +9,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   };
 
   if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (request.method === "GET") return Response.json({ data: [{ id: "@cf/moonshotai/kimi-k2.6" }] }, { headers: corsHeaders });
+  if (request.method === "GET") return Response.json({ data: [{ id: "@cf/meta/llama-3.1-70b-instruct" }] }, { headers: corsHeaders });
 
   try {
     const body: any = await request.json();
-    const aiResponse = await env.AI.run(body.model || "@cf/moonshotai/kimi-k2.6", {
+    const aiResponse = await env.AI.run(body.model || "@cf/meta/llama-3.1-70b-instruct", {
       messages: body.messages,
-      temperature: 0.4,
+      temperature: 0.5,
     });
 
     const rawText = typeof aiResponse === 'string' ? aiResponse : (aiResponse.response || aiResponse.text || "");
