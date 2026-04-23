@@ -28,7 +28,7 @@ export const requestNextTurn = async (history, modelOverride = '') => {
   const res = await fetch(`${getBaseUrl()}/v1/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, messages, temperature: 0.4 })
+    body: JSON.stringify({ model, messages, temperature: 0.2 })
   });
 
   if (!res.ok) throw new Error("Errore Network");

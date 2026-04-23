@@ -1,16 +1,5 @@
 import { corsHeaders, jsonResponse, resolveModel } from '../../_shared.js';
 
-const TURN_SCHEMA = {
-  type: 'object',
-  required: ['question', 'isGuess', 'guess', 'reaction'],
-  properties: {
-    question: { type: 'string' },
-    isGuess: { type: 'boolean' },
-    guess: { type: 'string' },
-    reaction: { type: 'string' },
-  },
-};
-
 const getMessageText = (content) => {
   if (typeof content === 'string') {
     return content;
@@ -81,20 +70,29 @@ export const onRequestPost = async ({ request, env }) => {
 
     let finalContent = content;
     try {
-      const parsed = JSON.parse(content.substring(content.indexOf('{'), content.lastIndexOf('}') + 1));
-      if (parsed.isGuess && parsed.guess) {
-        const wikiRes = await fetch(`https://it.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(parsed.guess.trim())}`, {
+      const start = content.indexOf('{');
+      const end = content.lastIndexOf('}');
+      const rawAiJson = JSON.parse(content.substring(start, end + 1));
+
+      const processedJson = {
+        question: typeof rawAiJson.question === 'string' ? rawAiJson.question : '',
+        isGuess: typeof rawAiJson.isGuess === 'boolean' ? rawAiJson.isGuess : false,
+        guess: typeof rawAiJson.guess === 'string' ? rawAiJson.guess : '',
+        reaction: typeof rawAiJson.reaction === 'string' ? rawAiJson.reaction : '',
+        gameOver: typeof rawAiJson.gameOver === 'boolean' ? rawAiJson.gameOver : false,
+      };
+
+      if (processedJson.isGuess && processedJson.guess) {
+        const wikiRes = await fetch(`https://it.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(processedJson.guess.trim())}`, {
           headers: { 'User-Agent': 'NeurosenseApp/1.0' }
         });
         if (wikiRes.ok) {
           const wikiData = await wikiRes.json();
-          finalContent = JSON.stringify({
-            ...parsed,
-            description: wikiData.extract || "",
-            imageUrl: wikiData.originalimage?.source || ""
-          });
+          processedJson.description = wikiData.extract || "";
+          processedJson.imageUrl = wikiData.originalimage?.source || "";
         }
       }
+      finalContent = JSON.stringify(processedJson);
     } catch (e) {
       console.error("Errore parsing o Wiki:", e);
     }

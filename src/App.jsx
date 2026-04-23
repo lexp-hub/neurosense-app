@@ -134,7 +134,20 @@ const App = () => {
 
                 {current.gameOver ? (
                   <div className="text-center animate-in zoom-in duration-500">
-                    <h2 className="text-2xl font-black mb-2 text-indigo-400 uppercase">Partita Conclusa</h2>
+                    <h2 className="text-2xl font-black mb-2 text-indigo-400 uppercase">Identità Rilevata</h2>
+                    <p className="text-xl font-bold text-white mb-6">{current.guess}</p>
+
+                    {current.imageUrl && (
+                      <div className="mb-8 overflow-hidden rounded-3xl border border-white/10 bg-black/20">
+                        <img src={current.imageUrl} alt={current.guess} className="w-full h-48 object-cover opacity-80" />
+                        {current.description && (
+                          <p className="p-4 text-[10px] leading-relaxed text-slate-400 uppercase tracking-tight">
+                            {current.description}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
                     <p className="text-slate-400 mb-8 text-sm italic">"{current.reaction}"</p>
                     
                     <button 
