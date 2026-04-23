@@ -23,13 +23,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const end = rawText.lastIndexOf('}');
     if (start === -1 || end === -1) throw new Error("L'IA non ha restituito un formato JSON valido");
 
-    const cleanJson = JSON.parse(rawText.substring(start, end + 1));
+    const rawAiJson = JSON.parse(rawText.substring(start, end + 1));
+
+    // Assicurati che i campi essenziali siano presenti e del tipo corretto
+    const processedJson = {
+      question: typeof rawAiJson.question === 'string' ? rawAiJson.question : '',
+      isGuess: typeof rawAiJson.isGuess === 'boolean' ? rawAiJson.isGuess : false,
+      guess: typeof rawAiJson.guess === 'string' ? rawAiJson.guess : '',
+      reaction: typeof rawAiJson.reaction === 'string' ? rawAiJson.reaction : '',
+    };
+
     let wikiData = { description: "", imageUrl: "" };
 
-    // IL CAMPO DEVE ESSERE 'guess' COME NEL PROMPT
-    if (cleanJson.isGuess && cleanJson.guess) {
+    if (processedJson.isGuess && processedJson.guess) {
       try {
-        const query = encodeURIComponent(cleanJson.guess.trim());
+        const query = encodeURIComponent(processedJson.guess.trim());
         const wikiRes = await fetch(`https://it.wikipedia.org/api/rest_v1/page/summary/${query}`, {
           headers: { 'User-Agent': 'NeurosenseApp/1.0' }
         });
@@ -40,14 +48,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
             imageUrl: data.originalimage?.source || ""
           };
         }
-      } catch (e) {}
+      } catch (e) {
+        // Logga l'errore per il debug, ma non bloccare la risposta
+        console.error("Errore durante il recupero dei dati da Wikipedia:", e);
+      }
     }
 
     return Response.json({
       choices: [{
         message: {
           role: "assistant",
-          content: JSON.stringify({ ...cleanJson, ...wikiData })
+          content: JSON.stringify({ ...processedJson, ...wikiData })
         }
       }]
     }, { headers: corsHeaders });
