@@ -3,10 +3,8 @@ import { RotateCcw, Loader2, X, Settings as SettingsIcon, Radio, RadioOff, Cpu }
 import { 
   requestNextTurn, 
   getStoredModelOverride, 
-  setStoredModelOverride, 
   fetchAvailableModels,
   getStoredBaseUrlOverride,
-  setStoredBaseUrlOverride
 } from './lib/neuroSenseApi';
 
 const TechnoSphere = lazy(() => import('./components/TechnoSphere'));
@@ -74,103 +72,115 @@ const App = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-[#0b1120] text-slate-100 flex flex-col items-center overflow-hidden font-sans p-4">
-      <Suspense fallback={<Loader2 className="animate-spin text-indigo-500 mt-20" />}>
+    <div className="h-screen w-full bg-[#050505] text-[#e5e5e5] flex flex-col font-sans overflow-hidden border-4 border-[#1a1a1a]">
+      <Suspense fallback={<Loader2 className="animate-spin text-yellow-400 m-auto" />}>
         
-        <div className="w-full max-w-xl flex flex-col items-center justify-center h-full gap-4">
-          
-          <header className="w-full bg-[#161f3266] rounded-2xl md:rounded-[2rem] backdrop-blur-xl border border-[#ffffff1a] p-3 flex justify-between items-center shrink-0 shadow-2xl">
-            <div className="flex items-center gap-3 ml-2">
-              <div className="w-8 h-8 bg-indigo-900 rounded-lg flex items-center justify-center border border-indigo-500 shadow-[0_0_10px_#4f46e533]">
-                <Cpu size={16} className="text-indigo-400" />
-              </div>
-              <div>
-                <h1 className="text-[10px] font-bold tracking-widest uppercase text-slate-200 leading-none mb-1">Neurosense</h1>
-                <div className="flex items-center gap-1">
-                  <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[7px] font-bold text-indigo-400 uppercase tracking-tighter">Network Active</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2 mr-1">
-              <button onClick={toggleRadio} className="p-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 transition-all">
-                {radioOn ? <Radio size={16} className="text-indigo-400" /> : <RadioOff size={16} />}
-              </button>
-              <button onClick={() => setShowSettings(true)} className="p-2 bg-slate-800 text-slate-400 rounded-lg hover:bg-slate-700 transition-all">
-                <SettingsIcon size={16} />
-              </button>
-            </div>
-          </header>
-
-          <div className="shrink-0 w-28 h-28 md:w-40 md:h-40 flex items-center justify-center relative transition-all">
-             <TechnoSphere animating={loading} />
+        <header className="w-full border-b border-[#1a1a1a] flex justify-between items-center p-6 bg-black">
+          <div className="flex items-center gap-6">
+            <span className="text-yellow-400 font-black text-2xl tracking-tighter italic">NS</span>
+            <div className="h-4 w-px bg-[#333]" />
+            <nav className="hidden md:flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-[#666]">
+              <span className="text-white">Neural</span>
+              <span>Process</span>
+              <span>Network</span>
+            </nav>
           </div>
+          <div className="flex gap-4">
+            <button onClick={toggleRadio} className={`px-4 py-2 border border-[#333] rounded-sm transition-all ${radioOn ? 'bg-yellow-400 text-black' : 'hover:bg-white/5'}`}>
+              <Radio size={14} />
+            </button>
+            <button onClick={() => setShowSettings(true)} className="px-4 py-2 border border-[#333] rounded-sm hover:bg-white/5 transition-all uppercase text-[10px] font-bold tracking-widest">
+              Settings
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-1 flex flex-col md:flex-row min-h-0">
           
-          {!gameStarted ? (
-            <div className="text-center animate-in fade-in duration-700">
-              <button 
-                onClick={startGame} 
-                className="bg-[#4f46e5] px-10 py-4 rounded-xl font-bold text-base shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95 transition-all hover:bg-indigo-500 uppercase tracking-widest"
-              >
-                Inizia Scansione
-              </button>
+          <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-[#1a1a1a] p-12 flex flex-col justify-between">
+            <div>
+              <span className="text-yellow-400 text-xs font-bold font-mono uppercase mb-4 block">0{steps}</span>
+              <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.8] mb-8 text-white">
+                NEURO<br/>SENSE
+              </h2>
             </div>
-          ) : (
-            <div className={`w-full flex flex-col bg-[#161f32]/80 backdrop-blur-2xl border border-[#ffffff1a] p-6 rounded-[2rem] shadow-3xl animate-in slide-in-from-bottom-6 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
-              <div className="shrink-0 flex justify-between items-center mb-6">
-                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-2 py-1 rounded-full border border-indigo-500/20">
-                  Neural Stage {steps}
-                </span>
-                <button onClick={() => setGameStarted(false)} className="text-slate-600 hover:text-white transition-colors">
-                  <RotateCcw size={16} />
-                </button>
-              </div>
+            <p className="text-[#666] text-[10px] leading-relaxed uppercase tracking-widest max-w-[200px]">
+              Advanced neural identification system. Largest selection of entities in the database.
+            </p>
+          </div>
 
-              <div className="flex flex-col items-center mb-8">
-                <p className="text-slate-500 italic mb-3 text-[10px] md:text-xs font-medium">
-                  "{current?.reaction || 'Analisi flussi...'}"
-                </p>
-                <h2 className="text-lg md:text-2xl font-bold leading-tight tracking-tight text-white text-center">
-                  {current?.isGuess ? `L'entità rilevata è ${current?.guess}?` : current?.question}
-                </h2>
-              </div>
+          <div className="flex-1 flex flex-col relative bg-[#080808]">
+            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none opacity-20">
+               <div className="w-[80%] h-[80%] border border-[#1a1a1a] rounded-full flex items-center justify-center">
+                 <div className="w-[60%] h-[60%] border border-[#1a1a1a] rounded-full" />
+               </div>
+            </div>
 
-              <div className="w-full space-y-3">
-                {current?.gameOver ? (
-                  <button onClick={() => setGameStarted(false)} className="w-full bg-indigo-600 p-4 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20">
-                    Nuova Scansione
+            <div className="flex-1 flex items-center justify-center p-8 z-10">
+              {!gameStarted ? (
+                <div className="text-center group">
+                  <div className="mb-12 transition-transform duration-700 group-hover:scale-110">
+                    <TechnoSphere animating={loading} />
+                  </div>
+                  <button onClick={startGame} className="bg-yellow-400 text-black px-16 py-6 font-black text-sm uppercase tracking-[0.3em] hover:bg-white transition-all">
+                    Start Scan
                   </button>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button onClick={() => nextStep("Sì")} className="bg-[#4f46e5] p-4 rounded-xl font-bold text-lg active:scale-95 hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-900/40">Sì</button>
-                      <button onClick={() => nextStep("No")} className="bg-slate-800 p-4 rounded-xl font-bold text-lg border border-[#ffffff1a] active:scale-95 hover:bg-slate-700 transition-all">No</button>
-                    </div>
-                    <button onClick={() => nextStep("Non lo so")} className="w-full bg-slate-800/40 p-2.5 rounded-lg font-bold text-[9px] border border-[#ffffff1a] active:scale-95 tracking-[0.2em] hover:text-white transition-all uppercase">
-                      Non lo so
-                    </button>
-                  </>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="w-full max-w-2xl bg-black border border-[#1a1a1a] p-12 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-yellow-400" />
+                  
+                  <div className="mb-12">
+                    <p className="text-[#666] text-[10px] font-bold uppercase tracking-[0.2em] mb-4 font-mono">
+                      {current?.reaction || 'Processing...'}
+                    </p>
+                    <h3 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tighter uppercase">
+                      {current?.isGuess ? `ENTITY: ${current?.guess}?` : current?.question}
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onClick={() => nextStep("Sì")} className="bg-yellow-400 text-black p-6 font-black uppercase text-xs tracking-widest hover:bg-white transition-all">Sì</button>
+                    <button onClick={() => nextStep("No")} className="border border-[#333] text-white p-6 font-black uppercase text-xs tracking-widest hover:bg-white hover:text-black transition-all">No</button>
+                    <button onClick={() => nextStep("Non lo so")} className="md:col-span-2 border border-[#1a1a1a] text-[#666] p-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:text-white transition-all">Unknown</button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-          
-          <div className={`mt-4 h-4 flex flex-col items-center transition-opacity duration-300 ${loading ? 'opacity-100' : 'opacity-0'}`}>
-            <span className="text-[8px] font-bold uppercase tracking-[0.4em] text-indigo-400 animate-pulse">Interrogando il network...</span>
+
+            {loading && (
+              <div className="absolute bottom-12 left-12 flex items-center gap-4">
+                <div className="w-12 h-[1px] bg-yellow-400 animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-yellow-400">Syncing...</span>
+              </div>
+            )}
           </div>
-        </div>
+        </main>
+
+        <footer className="w-full border-t border-[#1a1a1a] p-4 bg-black flex justify-between items-center px-8">
+           <span className="text-[8px] text-[#333] font-mono tracking-widest uppercase">System version 2.0.24 // Build 085466</span>
+           <div className="flex gap-4">
+             <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+             <div className="w-2 h-2 bg-[#1a1a1a] rounded-full" />
+             <div className="w-2 h-2 bg-[#1a1a1a] rounded-full" />
+           </div>
+        </footer>
 
         {showSettings && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in">
-            <div className="bg-[#111827] border border-[#ffffff1a] w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-200">Config</h2>
-                <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
-              </div>
-              <div className="space-y-4">
-                <div className="bg-[#1f2937] rounded-lg p-3 border border-[#ffffff1a] text-slate-300 text-[10px] truncate">{config.baseUrl}</div>
-                <div className="bg-[#1f2937] rounded-lg p-3 border border-indigo-500/30 text-slate-200 text-[10px] font-mono break-all">{config.model}</div>
-                <button onClick={() => setShowSettings(false)} className="w-full bg-[#4f46e5] p-3 rounded-lg font-bold text-[10px] uppercase hover:bg-indigo-500 transition-all">Chiudi</button>
+          <div className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center p-6">
+            <div className="w-full max-w-lg border border-[#1a1a1a] p-12 relative">
+              <button onClick={() => setShowSettings(false)} className="absolute top-8 right-8 text-[#666] hover:text-white"><X size={32}/></button>
+              <h2 className="text-4xl font-black tracking-tighter text-white mb-12 uppercase">Config</h2>
+              <div className="space-y-8">
+                <div className="border-b border-[#1a1a1a] pb-4">
+                  <label className="text-[10px] font-bold text-[#666] uppercase block mb-2">Engine</label>
+                  <p className="font-mono text-xs">{config.baseUrl}</p>
+                </div>
+                <div className="border-b border-[#1a1a1a] pb-4">
+                  <label className="text-[10px] font-bold text-[#666] uppercase block mb-2">Model</label>
+                  <p className="font-mono text-xs break-all">{config.model}</p>
+                </div>
+                <button onClick={() => setShowSettings(false)} className="w-full bg-yellow-400 text-black py-4 font-black uppercase text-xs">Close</button>
               </div>
             </div>
           </div>
