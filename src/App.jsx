@@ -78,16 +78,16 @@ const App = () => {
     <div className="h-dvh w-full bg-[#0b1120] text-slate-100 flex flex-col items-center overflow-hidden font-sans">
       <Suspense fallback={<Loader2 className="animate-spin text-indigo-500 mt-20" />}>
         
-        <header className="w-full max-w-4xl bg-[#161f32]/40 md:rounded-b-[2rem] backdrop-blur-xl border-b border-[#ffffff1a] p-4 flex justify-between items-center shrink-0 shadow-2xl z-20">
+        <header className="w-full max-w-4xl bg-[#161f3266] md:rounded-b-[2rem] backdrop-blur-xl border-b border-[#ffffff1a] p-4 flex justify-between items-center shrink-0 shadow-2xl z-20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-900 rounded-xl flex items-center justify-center border border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.2)]">
+            <div className="w-10 h-10 bg-indigo-900 rounded-xl flex items-center justify-center border border-indigo-500 shadow-[0_0_15px_#4f46e533]">
               <Cpu size={20} className="text-indigo-400" />
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-widest uppercase text-slate-200">Neurosense</h1>
               <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter">Cloudflare AI Linked</span>
+                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter">Network Active</span>
               </div>
             </div>
           </div>
