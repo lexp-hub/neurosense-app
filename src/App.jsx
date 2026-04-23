@@ -144,8 +144,8 @@ const App = () => {
                     <button onClick={() => nextStep("Sì")} className="bg-[#4f46e5] p-5 rounded-3xl font-bold text-xl active:scale-95 shadow-lg shadow-indigo-900/40 hover:bg-indigo-500 transition-all">Sì</button>
                     <button onClick={() => nextStep("No")} className="bg-slate-800/80 p-5 rounded-3xl font-bold text-xl border border-white/5 active:scale-95 hover:bg-slate-700 transition-all">No</button>
                   </div>
-                  <button onClick={() => nextStep("Non lo so")} className="w-full bg-slate-800/30 p-4 rounded-2xl text-slate-500 font-bold border border-white/5 active:scale-95 text-[11px] uppercase tracking-[0.2em] hover:text-slate-300 transition-all">
-                    Non rilevante
+                  <button onClick={() => nextStep("Non lo so")} className="bg-slate-800/80 p-5 rounded-3xl font-bold text-xl border border-white/5 active:scale-95 text-[11px] uppercase tracking-[0.2em] hover:text-slate-300 transition-all">
+                    Non lo so
                   </button>
                 </div>
               </div>
