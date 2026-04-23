@@ -79,7 +79,7 @@ const App = () => {
       <Suspense fallback={<Loader2 className="animate-spin text-indigo-500 mt-20" />}>
         
         <header className="w-full max-w-4xl bg-[#161f32]/40 backdrop-blur-xl border-b border-white/5 p-4 flex justify-between items-center shrink-0 shadow-2xl z-20">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3"> {}
             <div className="w-10 h-10 bg-indigo-600/10 rounded-xl flex items-center justify-center border border-indigo-500/20 shadow-[0_0_15px_rgba(79,70,229,0.2)]">
               <Cpu size={20} className="text-indigo-400" />
             </div>
@@ -185,9 +185,11 @@ const App = () => {
                         <button onClick={() => nextStep("No")} className="bg-slate-800/80 p-4 md:p-5 rounded-2xl md:rounded-3xl font-bold text-lg md:text-xl border border-white/5 active:scale-95 hover:bg-slate-700 transition-all">No</button>
                       </div>
                       <button onClick={() => nextStep("Non lo so")} className="w-full bg-slate-800/80 p-4 md:p-5 rounded-2xl md:rounded-3xl font-bold text-xs md:text-sm border border-white/5 active:scale-95 tracking-[0.2em] hover:text-slate-300 transition-all uppercase">
-                        Non so
+                        Non lo so
                       </button>
                     </div>
+                  )}
+                </div>
               </div>
             )
           )}
@@ -205,28 +207,28 @@ const App = () => {
         </main>
 
         {showSettings && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in">
-            <div className="bg-[#111827] border border-white/10 w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative">
+          <div className="fixed inset-0 bg-black backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in"> {/* Line 161 */}
+            <div className="bg-[#111827] border border-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative"> {/* Line 162 */}
               <div className="flex justify-between items-center mb-10">
                 <div className="flex items-center gap-3">
                   <SettingsIcon size={20} className="text-indigo-400" />
                   <h2 className="text-lg font-bold uppercase tracking-widest text-slate-200">Core Config</h2>
                 </div>
                 <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-white transition-colors">
-                  <X size={24} />
+                  <X size={24} /> {/* Line 169 */}
                 </button>
               </div>
 
               <div className="space-y-8">
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3 ml-1">AI Engine Endpoint</label>
-                  <div className="bg-[#1f2937]/50 rounded-2xl p-4 border border-white/5 text-slate-300 text-sm">
+                  <div className="bg-[#1f2937] rounded-2xl p-4 border border-white text-slate-300 text-sm"> {/* Line 178 */}
                     {config.baseUrl}
                   </div>
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3 ml-1">Neural Model</label>
-                  <div className="bg-[#1f2937]/50 rounded-2xl p-4 border border-indigo-500/30 text-slate-200 text-sm font-mono break-all">
+                  <div className="bg-[#1f2937] rounded-2xl p-4 border border-indigo-500 text-slate-200 text-sm font-mono break-all"> {/* Line 183 */}
                     {config.model}
                   </div>
                 </div>
