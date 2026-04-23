@@ -1,4 +1,4 @@
-const INITIAL_PROMPT = 'Ok partiamo, fai la prima domanda.';
+const INITIAL_PROMPT = 'Inizia. Fammi la prima domanda.';
 
 const DEMO_KNOWLEDGE = [
   {
@@ -79,11 +79,13 @@ const DEMO_QUESTIONS = [
 ];
 
 const normalizeAnswer = (value) => {
-  if (value === 'Sì' || value === 'Si') {
+  if (!value) return 'Non lo so';
+  const v = value.trim().toLowerCase();
+  if (v === 'sì' || v === 'si') {
     return 'Si';
   }
 
-  if (value === 'No') {
+  if (v === 'no') {
     return 'No';
   }
 
@@ -91,7 +93,7 @@ const normalizeAnswer = (value) => {
 };
 
 const getUserAnswers = (history) =>
-  history
+  (history || [])
     .filter((entry) => entry.role === 'user')
     .map((entry) => entry.content)
     .filter((value) => value !== INITIAL_PROMPT)
