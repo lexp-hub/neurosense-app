@@ -133,37 +133,37 @@ const App = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 md:pr-3">
-                {current.gameOver ? (
+                {current?.gameOver ? (
                   <div className="text-center animate-in zoom-in duration-500">
                     <h2 className="text-xl md:text-3xl font-black mb-2 text-indigo-400 uppercase">Identità Rilevata</h2>
-                    <p className="text-lg md:text-2xl font-bold text-white mb-4 md:mb-6">{current.guess}</p>
+                    <p className="text-lg md:text-2xl font-bold text-white mb-4 md:mb-6">{current?.guess}</p>
 
-                    {current.imageUrl && (
+                    {current?.imageUrl && (
                       <div className="mb-4 md:mb-6 overflow-hidden rounded-2xl md:rounded-3xl border border-[#ffffff1a] bg-black/20">
-                        <img src={current.imageUrl} alt={current.guess} className="w-full max-h-48 md:max-h-64 object-cover" />
-                        {current.description && (
+                        <img src={current?.imageUrl} alt={current?.guess} className="w-full max-h-48 md:max-h-64 object-cover" />
+                        {current?.description && (
                           <p className="p-4 text-[10px] md:text-xs leading-relaxed text-slate-400 uppercase tracking-tight">
-                            {current.description}
+                            {current?.description}
                           </p>
                         )}
                       </div>
                     )}
 
-                    <p className="text-slate-400 mb-6 md:mb-8 text-sm italic text-center">"{current.reaction}"</p>
+                    <p className="text-slate-400 mb-6 md:mb-8 text-sm italic text-center">"{current?.reaction}"</p>
                   </div>
                 ) : current ? (
                   <div className="flex flex-col items-center">
                     <p className="text-slate-400 italic mb-2 md:mb-4 text-sm font-medium text-center">
-                      "{current.reaction || 'Analisi flussi...'}"
+                      "{current?.reaction || 'Analisi flussi...'}"
                     </p>
                     <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-10 leading-tight tracking-tight text-white text-center min-h-[3rem]">
-                      {current.isGuess ? `L'entità rilevata è ${current.guess}?` : current.question}
+                      {current?.isGuess ? `L'entità rilevata è ${current?.guess}?` : current?.question}
                     </h2>
 
-                    {current.isGuess && current.imageUrl && (
+                    {current?.isGuess && current?.imageUrl && (
                       <div className="mb-6 md:mb-8 overflow-hidden rounded-2xl md:rounded-3xl border border-[#ffffff1a] bg-black/20 w-full">
-                        <img src={current.imageUrl} alt={current.guess} className="w-full max-h-48 md:max-h-64 object-cover" />
-                        {current.description && <p className="p-4 text-[10px] md:text-xs leading-relaxed text-slate-400 uppercase tracking-tight">{current.description}</p>}
+                        <img src={current?.imageUrl} alt={current?.guess} className="w-full max-h-48 md:max-h-64 object-cover" />
+                        {current?.description && <p className="p-4 text-[10px] md:text-xs leading-relaxed text-slate-400 uppercase tracking-tight">{current?.description}</p>}
                       </div>
                     )}
                   </div>
