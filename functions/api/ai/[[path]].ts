@@ -30,6 +30,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       isGuess: typeof rawAiJson.isGuess === 'boolean' ? rawAiJson.isGuess : false,
       guess: typeof rawAiJson.guess === 'string' ? rawAiJson.guess : '',
       reaction: typeof rawAiJson.reaction === 'string' ? rawAiJson.reaction : '',
+      gameOver: typeof rawAiJson.gameOver === 'boolean' ? rawAiJson.gameOver : false,
     };
 
     let wikiData = { description: "", imageUrl: "" };
