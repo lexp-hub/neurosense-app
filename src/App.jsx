@@ -78,7 +78,7 @@ const App = () => {
     <div className="h-dvh w-full bg-[#0b1120] text-slate-100 flex flex-col items-center overflow-hidden font-sans">
       <Suspense fallback={<Loader2 className="animate-spin text-indigo-500 mt-20" />}>
         
-        <header className="w-full max-w-4xl bg-[#161f32] md:rounded-b-[2rem] backdrop-blur-xl border-b border-white p-4 flex justify-between items-center shrink-0 shadow-2xl z-20">
+        <header className="w-full max-w-4xl bg-[#161f32]/40 md:rounded-b-[2rem] backdrop-blur-xl border-b border-[#ffffff1a] p-4 flex justify-between items-center shrink-0 shadow-2xl z-20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-900 rounded-xl flex items-center justify-center border border-indigo-500 shadow-[0_0_15px_rgba(79,70,229,0.2)]">
               <Cpu size={20} className="text-indigo-400" />
@@ -121,10 +121,10 @@ const App = () => {
               </button>
             </div>
           ) : (
-            current && !loading && (
-              <div className="w-full flex-1 flex flex-col bg-[#161f32] backdrop-blur-2xl border border-white p-5 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-3xl animate-in slide-in-from-bottom-12 min-h-0">
+            (current || loading) && (
+              <div className={`w-full flex-1 flex flex-col bg-[#161f32]/80 backdrop-blur-2xl border border-[#ffffff1a] p-5 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-3xl animate-in slide-in-from-bottom-12 min-h-0 ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div className="shrink-0 flex justify-between items-center mb-4 md:mb-6">
-                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest bg-indigo-900 px-3 py-1 rounded-full border border-indigo-500">
+                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
                     Neural Stage {steps}
                   </span>
                   <button onClick={() => setGameStarted(false)} className="text-slate-600 hover:text-white transition-colors">
@@ -139,7 +139,7 @@ const App = () => {
                     <p className="text-lg md:text-2xl font-bold text-white mb-4 md:mb-6">{current.guess}</p>
 
                     {current.imageUrl && (
-                      <div className="mb-4 md:mb-6 overflow-hidden rounded-2xl md:rounded-3xl border border-white bg-black">
+                      <div className="mb-4 md:mb-6 overflow-hidden rounded-2xl md:rounded-3xl border border-[#ffffff1a] bg-black/20">
                         <img src={current.imageUrl} alt={current.guess} className="w-full max-h-48 md:max-h-64 object-cover" />
                         {current.description && (
                           <p className="p-4 text-[10px] md:text-xs leading-relaxed text-slate-400 uppercase tracking-tight">
@@ -151,27 +151,31 @@ const App = () => {
 
                     <p className="text-slate-400 mb-6 md:mb-8 text-sm italic text-center">"{current.reaction}"</p>
                   </div>
-                ) : (
+                ) : current ? (
                   <div className="flex flex-col items-center">
                     <p className="text-slate-400 italic mb-2 md:mb-4 text-sm font-medium text-center">
                       "{current.reaction || 'Analisi flussi...'}"
                     </p>
-                    <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-10 leading-tight tracking-tight text-white text-center">
+                    <h2 className="text-xl md:text-3xl font-bold mb-6 md:mb-10 leading-tight tracking-tight text-white text-center min-h-[3rem]">
                       {current.isGuess ? `L'entità rilevata è ${current.guess}?` : current.question}
                     </h2>
 
                     {current.isGuess && current.imageUrl && (
-                      <div className="mb-6 md:mb-8 overflow-hidden rounded-2xl md:rounded-3xl border border-white bg-black w-full">
+                      <div className="mb-6 md:mb-8 overflow-hidden rounded-2xl md:rounded-3xl border border-[#ffffff1a] bg-black/20 w-full">
                         <img src={current.imageUrl} alt={current.guess} className="w-full max-h-48 md:max-h-64 object-cover" />
                         {current.description && <p className="p-4 text-[10px] md:text-xs leading-relaxed text-slate-400 uppercase tracking-tight">{current.description}</p>}
                       </div>
                     )}
                   </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="animate-spin text-indigo-500 w-12 h-12" />
+                  </div>
                 )}
                 </div>
 
-                <div className="shrink-0 pt-4 md:pt-6 border-t border-white/5">
-                  {current.gameOver ? (
+                <div className="shrink-0 pt-4 md:pt-6 border-t border-[#ffffff0d]">
+                  {current?.gameOver ? (
                     <button 
                       onClick={() => setGameStarted(false)}
                       className="w-full bg-indigo-600 p-4 md:p-5 rounded-2xl md:rounded-3xl font-bold text-lg shadow-[0_0_30px_rgba(79,70,229,0.4)] hover:bg-indigo-500 transition-all uppercase tracking-widest"
@@ -182,9 +186,9 @@ const App = () => {
                     <div className="space-y-3 md:space-y-4">
                       <div className="grid grid-cols-2 gap-3 md:gap-4">
                         <button onClick={() => nextStep("Sì")} className="bg-[#4f46e5] p-4 md:p-5 rounded-2xl md:rounded-3xl font-bold text-lg md:text-xl active:scale-95 shadow-lg shadow-indigo-900/40 hover:bg-indigo-500 transition-all">Sì</button>
-                        <button onClick={() => nextStep("No")} className="bg-slate-800 p-4 md:p-5 rounded-2xl md:rounded-3xl font-bold text-lg md:text-xl border border-white active:scale-95 hover:bg-slate-700 transition-all">No</button>
+                        <button onClick={() => nextStep("No")} className="bg-slate-800 p-4 md:p-5 rounded-2xl md:rounded-3xl font-bold text-lg md:text-xl border border-[#ffffff1a] active:scale-95 hover:bg-slate-700 transition-all">No</button>
                       </div>
-                      <button onClick={() => nextStep("Non lo so")} className="w-full bg-slate-800 p-4 md:p-5 rounded-2xl md:rounded-3xl font-bold text-xs md:text-sm border border-white active:scale-95 tracking-[0.2em] hover:text-slate-300 transition-all uppercase">
+                      <button onClick={() => nextStep("Non lo so")} className="w-full bg-slate-800 p-4 md:p-5 rounded-2xl md:rounded-3xl font-bold text-xs md:text-sm border border-[#ffffff1a] active:scale-95 tracking-[0.2em] hover:text-slate-300 transition-all uppercase">
                         Non lo so
                       </button>
                     </div>
@@ -207,8 +211,8 @@ const App = () => {
         </main>
 
         {showSettings && (
-          <div className="fixed inset-0 bg-black backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in"> {/* Line 161 */}
-            <div className="bg-[#111827] border border-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative"> {/* Line 162 */}
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in">
+            <div className="bg-[#111827] border border-[#ffffff1a] w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative">
               <div className="flex justify-between items-center mb-10">
                 <div className="flex items-center gap-3">
                   <SettingsIcon size={20} className="text-indigo-400" />
@@ -222,13 +226,13 @@ const App = () => {
               <div className="space-y-8">
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3 ml-1">AI Engine Endpoint</label>
-                  <div className="bg-[#1f2937] rounded-2xl p-4 border border-white text-slate-300 text-sm"> {/* Line 178 */}
+                  <div className="bg-[#1f2937] rounded-2xl p-4 border border-[#ffffff1a] text-slate-300 text-sm">
                     {config.baseUrl}
                   </div>
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3 ml-1">Neural Model</label>
-                  <div className="bg-[#1f2937] rounded-2xl p-4 border border-indigo-500 text-slate-200 text-sm font-mono break-all"> {/* Line 183 */}
+                  <div className="bg-[#1f2937] rounded-2xl p-4 border border-indigo-500/30 text-slate-200 text-sm font-mono break-all">
                     {config.model}
                   </div>
                 </div>
