@@ -51,7 +51,7 @@ const App = () => {
       setHistory([{ role: 'assistant', content: raw }]);
       setSteps(1);
     } catch (err) {
-      console.error("Inizializzazione fallita:", err);
+      console.error(err);
       setGameStarted(false);
     } finally {
       setLoading(false);
@@ -68,17 +68,17 @@ const App = () => {
       setHistory([...updatedHistory, { role: 'assistant', content: raw }]);
       setSteps(prev => prev + 1);
     } catch (err) {
-      console.error("Errore di scansione:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1120] text-slate-100 flex flex-col items-center p-6 overflow-x-hidden font-sans">
+    <div className="h-screen bg-[#0b1120] text-slate-100 flex flex-col items-center p-4 overflow-hidden font-sans">
       <Suspense fallback={<Loader2 className="animate-spin text-indigo-500 mt-20" />}>
         
-        <header className="w-full max-w-md bg-[#161f32]/40 backdrop-blur-xl border border-white/5 p-4 rounded-3xl flex justify-between items-center mb-12 shadow-2xl">
+        <header className="w-full max-w-md bg-[#161f32]/40 backdrop-blur-xl border border-white/5 p-4 rounded-3xl flex justify-between items-center mb-6 shadow-2xl shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-600/10 rounded-xl flex items-center justify-center border border-indigo-500/20 shadow-[0_0_15px_rgba(79,70,229,0.2)]">
               <Cpu size={20} className="text-indigo-400" />
@@ -102,15 +102,15 @@ const App = () => {
           </div>
         </header>
 
-        <main className="flex-1 w-full max-w-md flex flex-col items-center justify-center relative">
+        <main className="flex-1 w-full max-w-md flex flex-col items-center justify-center relative min-h-0">
           
-          <div className="w-72 h-72 mb-16 flex items-center justify-center relative">
+          <div className="w-44 h-44 md:w-56 md:h-56 mb-6 flex items-center justify-center relative shrink-0">
              <TechnoSphere animating={loading} />
           </div>
           
           {!gameStarted ? (
-            <div className="text-center animate-in fade-in zoom-in duration-1000">
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.5em] mb-10 opacity-70">
+            <div className="text-center animate-in fade-in zoom-in duration-700">
+              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.5em] mb-8 opacity-70">
                 Pronto per l'estrazione dati
               </p>
               <button 
@@ -122,8 +122,8 @@ const App = () => {
             </div>
           ) : (
             current && !loading && (
-              <div className="w-full bg-[#161f32]/80 backdrop-blur-2xl border border-white/5 p-7 rounded-[2.5rem] shadow-3xl animate-in slide-in-from-bottom-12">
-                <div className="flex justify-between items-center mb-8">
+              <div className="w-full bg-[#161f32]/80 backdrop-blur-2xl border border-white/5 p-6 rounded-[2.5rem] shadow-3xl animate-in slide-in-from-bottom-8 overflow-hidden">
+                <div className="flex justify-between items-center mb-6">
                   <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
                     Neural Stage {steps}
                   </span>
@@ -132,20 +132,20 @@ const App = () => {
                   </button>
                 </div>
 
-                <p className="text-slate-400 italic mb-3 text-sm font-medium opacity-80">
+                <p className="text-slate-400 italic mb-2 text-xs font-medium opacity-80">
                   "{current.reaction || 'Analisi flussi...'}"
                 </p>
-                <h2 className="text-2xl font-bold mb-10 leading-tight tracking-tight text-white">
+                <h2 className="text-xl font-bold mb-8 leading-tight tracking-tight text-white">
                   {current.isGuess ? `L'entità rilevata è ${current.guess}?` : current.question}
                 </h2>
 
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <button onClick={() => nextStep("Sì")} className="bg-[#4f46e5] p-5 rounded-3xl font-bold text-xl active:scale-95 shadow-lg shadow-indigo-900/40 hover:bg-indigo-500 transition-all">Sì</button>
-                    <button onClick={() => nextStep("No")} className="bg-slate-800/80 p-5 rounded-3xl font-bold text-xl border border-white/5 active:scale-95 hover:bg-slate-700 transition-all">No</button>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={() => nextStep("Sì")} className="bg-[#4f46e5] p-4 rounded-2xl font-bold text-lg active:scale-95 shadow-lg shadow-indigo-900/40 hover:bg-indigo-500 transition-all">Sì</button>
+                    <button onClick={() => nextStep("No")} className="bg-slate-800/80 p-4 rounded-2xl font-bold text-lg border border-white/5 active:scale-95 hover:bg-slate-700 transition-all">No</button>
                   </div>
-                  <button onClick={() => nextStep("Non lo so")} className="w-full bg-slate-800/30 p-4 rounded-2xl text-slate-500 font-bold border border-white/5 active:scale-95 text-[11px] uppercase tracking-[0.2em] hover:text-slate-300 transition-all">
-                    Non rilevante
+                  <button onClick={() => nextStep("Non lo so")} className="bg-slate-800/80 p-4 rounded-2xl font-bold text-lg border border-white/5 active:scale-95 hover:bg-slate-700 transition-all">
+                    Non lo so
                   </button>
                 </div>
               </div>
@@ -153,13 +153,13 @@ const App = () => {
           )}
           
           {loading && (
-            <div className="absolute bottom-[-4rem] flex flex-col items-center gap-4 animate-pulse">
+            <div className="mt-4 flex flex-col items-center gap-3 animate-pulse">
               <div className="flex gap-1.5">
                 <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
                 <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
                 <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-400/60">Interrogando il network...</span>
+              <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-indigo-400/60">Interrogando il network...</span>
             </div>
           )}
         </main>
