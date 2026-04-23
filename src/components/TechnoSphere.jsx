@@ -1,48 +1,28 @@
 import React from 'react';
 
-const TechnoSphere = ({ className, animating = false }) => (
-  <svg viewBox="0 0 200 200" className={`${className} ${animating ? 'animate-pulse' : ''}`}>
-    <defs>
-      <radialGradient id="sphereGrad" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-        <stop offset="0%" stopColor="#818cf8" />
-        <stop offset="70%" stopColor="#4338ca" />
-        <stop offset="100%" stopColor="#1e1b4b" />
-      </radialGradient>
-      <filter id="glow">
-        <feGaussianBlur stdDeviation="3" result="blur" />
-        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-      </filter>
-    </defs>
-    
-    <path d="M60 160 L140 160 L160 190 L40 190 Z" fill="#1e293b" stroke="#4338ca" strokeWidth="2" />
-    <rect x="70" y="170" width="60" height="4" rx="2" fill="#6366f1" opacity="0.5" />
-    
-    <circle cx="100" cy="100" r="70" fill="url(#sphereGrad)" stroke="#6366f1" strokeWidth="1" />
-    
-    <g opacity="0.4" stroke="#818cf8" strokeWidth="0.5" fill="none">
-      <circle cx="100" cy="100" r="50" />
-      <path d="M100 50 L100 150 M50 100 L150 100" />
-      <path d="M65 65 L135 135 M65 135 L135 65" />
-    </g>
-    
-    <circle 
-        cx="100" 
-        cy="100" 
-        r="15" 
-        fill="#facc15" 
-        filter="url(#glow)" 
-        className={animating ? "animate-ping" : ""} 
-        style={{ animationDuration: '2s' }} 
-    />
-    <circle cx="100" cy="100" r="8" fill="#ffffff" />
-    
-    <circle cx="60" cy="60" r="2" fill="#818cf8">
-      <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
-    </circle>
-    <circle cx="140" cy="140" r="2" fill="#818cf8">
-      <animate attributeName="opacity" values="1;0;1" dur="2.5s" repeatCount="indefinite" />
-    </circle>
-  </svg>
-);
+const TechnoSphere = ({ animating }) => {
+  return (
+    <div className="relative w-full h-full flex items-center justify-center">
+      {/* Glow esterno */}
+      <div className={`absolute inset-0 bg-indigo-500/20 rounded-full blur-[60px] transition-all duration-1000 ${animating ? 'scale-125 opacity-100' : 'scale-100 opacity-50'}`} />
+      
+      {/* Sfera centrale */}
+      <div className={`relative w-48 h-48 rounded-full bg-gradient-to-tr from-indigo-900 via-slate-900 to-indigo-600 border border-white/10 shadow-2xl flex items-center justify-center overflow-hidden`}>
+        
+        {/* Cerchi rotanti interni */}
+        <div className={`absolute w-full h-full border-2 border-indigo-500/30 rounded-full border-t-transparent animate-[spin_3s_linear_infinite] ${animating ? 'opacity-100' : 'opacity-40'}`} />
+        <div className={`absolute w-[80%] h-[80%] border-2 border-cyan-400/20 rounded-full border-b-transparent animate-[spin_2s_linear_infinite_reverse]`} />
+        
+        {/* Core luminoso */}
+        <div className={`w-12 h-12 bg-white rounded-full blur-md shadow-[0_0_30px_rgba(255,255,255,0.8)] transition-all duration-300 ${animating ? 'scale-150' : 'scale-100'}`} />
+        
+        {/* Scanner line */}
+        {animating && (
+          <div className="absolute w-full h-1 bg-indigo-400/50 blur-sm shadow-[0_0_15px_indigo] animate-[bounce_2s_infinite]" />
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default TechnoSphere;
