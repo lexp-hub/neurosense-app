@@ -70,7 +70,6 @@ export const onRequestPost = async ({ request, env }) => {
       throw new Error('Il modello AI non ha restituito alcuna risposta.');
     }
 
-    // Debug della risposta grezza in produzione (opzionale, utile per Kimi)
     console.log(`AI Response for ${selectedModel}:`, JSON.stringify(response));
 
     const content =
@@ -79,6 +78,26 @@ export const onRequestPost = async ({ request, env }) => {
       getMessageText(response?.result?.response) ||
       getMessageText(response?.result) ||
       (typeof response === 'string' ? response : '');
+
+    let finalContent = content;
+    try {
+      const parsed = JSON.parse(content.substring(content.indexOf('{'), content.lastIndexOf('}') + 1));
+      if (parsed.isGuess && parsed.guess) {
+        const wikiRes = await fetch(`https://it.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(parsed.guess.trim())}`, {
+          headers: { 'User-Agent': 'NeurosenseApp/1.0' }
+        });
+        if (wikiRes.ok) {
+          const wikiData = await wikiRes.json();
+          finalContent = JSON.stringify({
+            ...parsed,
+            description: wikiData.extract || "",
+            imageUrl: wikiData.originalimage?.source || ""
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Errore parsing o Wiki:", e);
+    }
 
     return jsonResponse({
       id: crypto.randomUUID(),
@@ -91,7 +110,7 @@ export const onRequestPost = async ({ request, env }) => {
           finish_reason: 'stop',
           message: {
             role: 'assistant',
-            content,
+            content: finalContent,
           },
         },
       ],

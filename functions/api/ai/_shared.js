@@ -1,4 +1,4 @@
-const DEFAULT_MODEL = '@cf/meta/llama-3.2-3b-instruct'; // Llama 3.2 3B per velocità e precisione JSON
+const DEFAULT_MODEL = '@cf/meta/llama-3.1-70b-instruct';
 
 const parseAllowedModels = (env) => {
   const configured = env.CF_ALLOWED_AI_MODELS?.trim();

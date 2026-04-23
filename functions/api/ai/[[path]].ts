@@ -25,7 +25,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     const rawAiJson = JSON.parse(rawText.substring(start, end + 1));
 
-    // Assicurati che i campi essenziali siano presenti e del tipo corretto
     const processedJson = {
       question: typeof rawAiJson.question === 'string' ? rawAiJson.question : '',
       isGuess: typeof rawAiJson.isGuess === 'boolean' ? rawAiJson.isGuess : false,
@@ -49,7 +48,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           };
         }
       } catch (e) {
-        // Logga l'errore per il debug, ma non bloccare la risposta
         console.error("Errore durante il recupero dei dati da Wikipedia:", e);
       }
     }

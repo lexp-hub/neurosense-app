@@ -1,7 +1,7 @@
 import { SYSTEM_PROMPT } from '../constants/prompts';
 
 const DEFAULT_BASE_URL = '/api/ai';
-const DEFAULT_MODEL = '@cf/moonshotai/kimi-k2.6';
+const DEFAULT_MODEL = '@cf/meta/llama-3.1-70b-instruct';
 
 const getBaseUrl = () => localStorage.getItem('neurosense.ai.baseUrl') || DEFAULT_BASE_URL;
 
@@ -36,7 +36,6 @@ export const requestNextTurn = async (history, modelOverride = '') => {
   const data = await res.json();
   const text = data?.choices?.[0]?.message?.content || "";
 
-  // ESTRAZIONE SICURA DEL JSON
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
   if (start === -1 || end === -1) throw new Error("Formato IA non valido");

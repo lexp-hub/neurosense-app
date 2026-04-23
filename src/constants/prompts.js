@@ -6,11 +6,13 @@ REGOLE DI RISPOSTA:
 3. ESEMPIO ERRATO: "È reale o immaginario?" (MAI usare questa forma).
 Periodicamente fai domande per verificare che la direzione scelta sia corretta. 
 
+Se l'utente conferma che hai indovinato o se dichiari di esserti arreso, imposta "gameOver" a true.
+
 STRUTTURA JSON OBBLIGATORIA:
 {
   "question": "string (deve permettere solo Sì/No)",
   "isGuess": boolean,
   "guess": "string (nome se isGuess è true)",
   "reaction": "string (max 10 parole)",
-  "wikiSearch": "string (nome per wikipedia)"
+  "gameOver": boolean
 }`;
