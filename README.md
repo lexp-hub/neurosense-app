@@ -5,7 +5,7 @@
 ## Caratteristiche
 
 - **Design**: interfaccia futuristica che reagisce alle risposte dell'utente.
-- **Cloudflare AI**: endpoint OpenAI-compatible servito da Pages Functions e Workers AI.
+- **Cloudflare AI**: endpoint servito da Pages Functions e Workers AI.
 - **Design Cyberpunk**: UI scura con accenti neon e animazioni fluide.
 
 ## Stack
