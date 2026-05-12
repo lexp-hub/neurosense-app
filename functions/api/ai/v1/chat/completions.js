@@ -88,7 +88,7 @@ export const onRequestPost = async ({ request, env }) => {
         });
         if (wikiRes.ok) {
           const wikiData = await wikiRes.json();
-          // Limitiamo l'estratto a 300 caratteri se troppo lungo
+        
           processedJson.description = wikiData.extract ? (wikiData.extract.length > 300 ? wikiData.extract.substring(0, 297) + "..." : wikiData.extract) : "";
           processedJson.imageUrl = wikiData.originalimage?.source || "";
         }
